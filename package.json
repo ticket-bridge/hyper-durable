@@ -1,0 +1,21 @@
+{
+  "name": "hyper-durable",
+  "version": "0.1.0",
+  "description": "Object-like access to Durable Object properties and methods",
+  "main": "index.ts",
+  "repository": "git@github.com:ticket-bridge/hyper-durable.git",
+  "author": "Travis Frank <travis@ticketbridge.io>",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.17.10",
+    "@babel/preset-env": "^7.17.10",
+    "@babel/preset-typescript": "^7.16.7",
+    "@types/jest": "^27.5.0",
+    "babel-jest": "^28.0.3",
+    "jest": "^28.0.3",
+    "ts-jest": "^28.0.1"
+  },
+  "dependencies": {
+    "itty-router": "^2.6.1"
+  }
+}
