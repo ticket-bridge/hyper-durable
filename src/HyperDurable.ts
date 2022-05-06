@@ -1,7 +1,14 @@
 import { Router } from 'itty-router';
 
-export class HyperDurable implements HyperDurable {
-  constructor(state: DurableObjectState, env: Env) {
+export class HyperDurable {
+  isProxy?: boolean;
+  id: DurableObjectId;
+  state: DurableObjectState;
+  storage: DurableObjectStorage;
+  router: Router;
+  storageMap: Map<string, boolean>;
+
+  constructor(state: DurableObjectState, env: unknown) {
     this.id = state.id;
     this.state = state;
     this.storage = state.storage;
@@ -52,5 +59,11 @@ export class HyperDurable implements HyperDurable {
     return hyperProxy;
   }
 
-  async fetch(request: Request): Promise<Response> {}
+  async clear(): Promise<string> {
+    this.state.dirty = false;
+  }
+
+  async fetch(request: Request): Promise<Response> {
+    return new Response();
+  }
 }

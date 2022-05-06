@@ -1,6 +1,6 @@
-const { expect } = require('chai');
+import { expect } from 'chai';
 
-const { HyperDurable } = require('./HyperDurable');
+import { HyperDurable } from './HyperDurable';
 
 describe('HyperDurable', () => {
   // Test class
@@ -8,7 +8,7 @@ describe('HyperDurable', () => {
     counter: number;
     deeplyNested: string[];
 
-    constructor(state: DurableObjectState, env) {
+    constructor(state: DurableObjectState, env: unknown) {
       super(state, env);
       this.counter = 1;
       this.deeplyNested = [];
@@ -22,7 +22,7 @@ describe('HyperDurable', () => {
       return `Hello ${name}!`;
     }
   }
-  let counter;
+  let counter: Counter | undefined;
 
   beforeEach(() => {
     counter = new Counter({}, {});
@@ -106,7 +106,9 @@ describe('HyperDurable', () => {
     });
 
     test('/set adds new properties in memory, persists data, and returns value', async () => {
-      expect(await counter.fetch('api.hyperdurable.io/set/abc', { body:  }))
+      expect(await counter.fetch('api.hyperdurable.io/set/abc', { body: 99 })).to.equal(99);
+      expect(counter.abc).to.equal(99);
+      expect(await counter.storage.get('abc')).to.equal(99);
     });
 
     test('/get and /set throw when attempting to access a method', async () => {
