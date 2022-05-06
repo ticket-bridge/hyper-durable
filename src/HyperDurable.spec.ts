@@ -5,7 +5,10 @@ const { HyperDurable } = require('./HyperDurable');
 describe('HyperDurable', () => {
   // Test class
   class Counter extends HyperDurable {
-    constructor(state, env) {
+    counter: number;
+    deeplyNested: string[];
+
+    constructor(state: DurableObjectState, env) {
       super(state, env);
       this.counter = 1;
       this.deeplyNested = [];
@@ -13,6 +16,10 @@ describe('HyperDurable', () => {
 
     increment() {
       this.counter++;
+    }
+
+    sayHello(name: string) {
+      return `Hello ${name}!`;
     }
   }
   let counter;
@@ -86,26 +93,42 @@ describe('HyperDurable', () => {
       expect(await counter.fetch('api.hyperdurable.io/get/counter')).to.equal(1);
     });
 
+    test('/get throws when requesting nonexistent key', async () => {
+      expect(await counter.fetch('api.hyperdurable.io/get/xyz')).to.deep.equal({
+        message: 'property xyz does not exist'
+      });
+    });
+
     test('/set changes value in memory, persists data, and returns value', async () => {
       expect(await counter.fetch('api.hyperdurable.io/set/counter', { body: 5 })).to.equal(5);
       expect(counter.counter).to.equal(5);
       expect(await counter.storage.get('counter')).to.equal(5);
     });
 
+    test('/set adds new properties in memory, persists data, and returns value', async () => {
+      expect(await counter.fetch('api.hyperdurable.io/set/abc', { body:  }))
+    });
+
     test('/get and /set throw when attempting to access a method', async () => {
-      expect(await counter.fetch('api.hyperdurable.io/get/increment')).to.equal({
+      expect(await counter.fetch('api.hyperdurable.io/get/increment')).to.deep.equal({
         message: 'cannot get method increment (try fetching /call/increment)'
       });
-      expect(await counter.fetch('api.hyperdurable.io/set/increment')).to.equal({
+      expect(await counter.fetch('api.hyperdurable.io/set/increment')).to.deep.equal({
         message: 'cannot set method increment (try fetching /call/increment)'
       });
     });
 
-    test('/call executes method and returns result of method call', async () => {
+    test('/call executes method with no parameters and returns result', async () => {
       expect(await counter.fetch('api.hyperdurable.io/call/increment')).to.equal(undefined);
       expect(counter.counter).to.equal(2);
     });
 
-
+    test('/call executes method with parameters from body and returns result', async () => {
+      expect(await counter.fetch('api.hyperdurable.io/call/sayHello', {
+        body: {
+          name: 'HyperDurable'
+        }
+      })).to.equal('Hello HyperDurable!');
+    });
   });
 });
