@@ -22,6 +22,7 @@
     "wrangler": "^0.0.30"
   },
   "dependencies": {
+    "@cloudflare/workers-types": "^3.9.0",
     "itty-router": "^2.6.1"
   }
 }
