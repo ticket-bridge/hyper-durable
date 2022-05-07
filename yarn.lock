@@ -1225,7 +1225,7 @@
     set-cookie-parser "^2.4.8"
     undici "4.13.0"
 
-"@miniflare/durable-objects@2.4.0":
+"@miniflare/durable-objects@2.4.0", "@miniflare/durable-objects@^2.4.0":
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/@miniflare/durable-objects/-/durable-objects-2.4.0.tgz#5a9e487f4cc6255069f5fcff053d399c501d0e61"
   integrity sha512-VVLaUXXcAQcYE/3YmDLTacZf5OzR8bib6q1T9NqVb0uK5sLMQqyHvQdsG5rMqs7iyxfJxyZ0bL2OW9XGALOkoQ==
@@ -1307,7 +1307,7 @@
     "@miniflare/shared" "2.4.0"
     "@miniflare/storage-memory" "2.4.0"
 
-"@miniflare/storage-memory@2.4.0":
+"@miniflare/storage-memory@2.4.0", "@miniflare/storage-memory@^2.4.0":
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/@miniflare/storage-memory/-/storage-memory-2.4.0.tgz#af3214bd17bc08e93f8f5750bf666c0152f5353e"
   integrity sha512-mhWwgHhDNtEa7y1bYbdVucV0lqUmzagYXUSppAdSGS5JPyJMyw3HseqRNTk6gC/vKlvEYlFf3ugWcREGCedr9A==
