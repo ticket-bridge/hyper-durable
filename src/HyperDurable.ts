@@ -8,6 +8,7 @@ interface HyperState extends DurableObjectState {
 
 export class HyperDurable implements DurableObject {
   readonly isProxy?: boolean;
+  readonly original?: HyperDurable;
   id: DurableObjectId | string;
   state: HyperState;
   storage: DurableObjectStorage;
@@ -27,13 +28,18 @@ export class HyperDurable implements DurableObject {
         // Reserved key to confirm this is a proxy
         if (key === 'isProxy') return true;
 
+        // Reserved key to get the underlying object
+        if (key === 'original') return target;
+
         // console.log(`Getting ${target}.${typeof key === 'string' ? key : 'unknown'}`);
 
         const prop = target[key];
 
-        // Recursively proxy any object-like properties, except state
+        const reservedKeys = new Set(['id', 'state', 'storage', 'router']);
+
+        // Recursively proxy any object-like properties, except reserved keys
         // This enables us to keep track of deeply-nested changes to props
-        if (typeof prop === 'object' && !prop.isProxy && key !== 'state') {
+        if (typeof prop === 'object' && !prop.isProxy && !reservedKeys.has(key)) {
           target[key] = new Proxy(prop, handler);
         }
 
@@ -74,13 +80,22 @@ export class HyperDurable implements DurableObject {
   }
 
   // Removes all dirty props from Set (they won't be persisted)
-  async clear(): Promise<boolean> {
+  clear() {
     this.state.dirty.clear();
-    return new Promise(() => true);
   }
 
-  async persist(): Promise<string> {
-    return new Promise(() => 'true');
+  async persist(): Promise<boolean> {
+    try {
+      for (let key of this.state.dirty) {
+        const value = this[key].isProxy ? this[key].original : this[key];
+        await this.storage.put(key, value);
+        this.state.dirty.delete(key);
+      }
+      return true;
+    } catch(e) {
+      console.error(e);
+      return false;
+    }
   }
 
   async fetch(request: Request): Promise<Response> {
