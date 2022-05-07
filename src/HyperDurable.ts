@@ -3,6 +3,7 @@ import { DurableObjectState, DurableObjectStorage } from '@miniflare/durable-obj
 
 interface HyperState extends DurableObjectState {
   dirty?: Set<string>;
+  savedKey?: string;
 }
 
 export class HyperDurable implements DurableObject {
@@ -16,6 +17,7 @@ export class HyperDurable implements DurableObject {
     this.id = state.id;
     this.state = state;
     this.state.dirty = new Set();
+    this.state.savedKey = '';
     this.storage = state.storage;
     this.router = Router();
 
@@ -35,15 +37,23 @@ export class HyperDurable implements DurableObject {
           target[key] = new Proxy(prop, handler);
         }
 
-        // If prop is a function, bind `this` to `receiver` (anything inheriting from HyperDurable)
-        return typeof target[key] === 'function' ? target[key].bind(target) : target[key];
+        // If we're getting a proxied top-level property of the Durable Object,
+        // save the key to persist the deeply-nested property
+        if (target[key].isProxy && this === target) this.state.savedKey = key;
+
+        // If prop is a function, bind `this`
+        return typeof target[key] === 'function' ? target[key].bind(receiver) : target[key];
       },
       set: (target: any, key: string, value: any) => {
         // console.log(`Setting ${target}.${key} to equal ${value}`);
         
-        // Push key to persist data 
+        // Add key to persist data 
         if (target[key] !== value) {
-          this.state.dirty.add(key);
+          if (this === target) {
+            this.state.dirty.add(key);
+          } else {
+            this.state.dirty.add(this.state.savedKey);
+          }
         }
 
         target[key] = value;
@@ -63,9 +73,10 @@ export class HyperDurable implements DurableObject {
     return hyperProxy;
   }
 
-  async clear(): Promise<string> {
+  // Removes all dirty props from Set (they won't be persisted)
+  async clear(): Promise<boolean> {
     this.state.dirty.clear();
-    return new Promise(() => 'false');
+    return new Promise(() => true);
   }
 
   async persist(): Promise<string> {

@@ -43,22 +43,23 @@ describe('HyperDurable', () => {
       expect(counter.fetch).to.be.a('function');
     });
 
-    test('is a proxy (traps isProxy get to confirm)', () => {
+    test('is a proxy (traps isProxy to confirm)', () => {
       expect(counter.isProxy).to.be.true;
     });
 
-    test('maintains an Array of all persistable properties', () => {
+    test('maintains a Set of all dirty properties', () => {
       expect(counter.state.dirty).to.be.a('Set').that.has.all.keys('counter', 'deeplyNested');
     })
 
     test('reflects other getters', () => {
       expect(counter.counter).to.equal(1);
+      expect(counter.deeplyNested).to.deep.equal([]);
     });
 
-    test('tracks dirty state when setting properties to new values', () => {
+    test('tracks dirty props in state when setting properties to new values', async () => {
       // In the test class, the state starts dirty because properties are set in the constructor
       // Clear the record of dirty props from state
-      counter.clear();
+      await counter.clear();
 
       // Identical values don't need to be persisted
       counter.counter = 1;
@@ -67,15 +68,15 @@ describe('HyperDurable', () => {
       expect(counter.state.dirty).to.have.all.keys('counter');
     });
 
-    test('binds methods to itself', () => {
-      counter.clear();
+    test('binds methods to itself', async () => {
+      await counter.clear();
       counter.increment();
       expect(counter.counter).to.equal(2);
       expect(counter.state.dirty).to.have.all.keys('counter');
     });
 
-    test('sets dirty state when mutating deeply nested properties', () => {
-      counter.clear();
+    test('tracks deeply nested dirty props', async () => {
+      await counter.clear();
       counter.deeplyNested.push('test');
       expect(counter.deeplyNested).to.deep.equal(['test']);
       expect(counter.state.dirty).to.have.all.keys('deeplyNested');
