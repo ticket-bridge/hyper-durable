@@ -89,8 +89,6 @@ describe('HyperDurable', () => {
     });
 
     test('persists dirty data', async () => {
-      expect(await counter.storage.get('counter')).to.equal(undefined);
-      expect(await counter.storage.get('objectLikeProp')).to.equal(undefined);
       await counter.persist();
       expect(counter.state.dirty).to.be.empty;
       expect(await counter.storage.get('counter')).to.equal(1);
