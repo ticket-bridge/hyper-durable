@@ -1,27 +1,31 @@
 import { Router } from 'itty-router';
+import { DurableObjectState, DurableObjectStorage } from '@miniflare/durable-objects';
 
-export class HyperDurable {
-  isProxy?: boolean;
-  id: DurableObjectId;
-  state: DurableObjectState;
+interface HyperState extends DurableObjectState {
+  dirty?: Set<string>;
+}
+
+export class HyperDurable implements DurableObject {
+  readonly isProxy?: boolean;
+  id: DurableObjectId | string;
+  state: HyperState;
   storage: DurableObjectStorage;
   router: Router;
-  storageMap: Map<string, boolean>;
 
   constructor(state: DurableObjectState, env: unknown) {
     this.id = state.id;
     this.state = state;
+    this.state.dirty = new Set();
     this.storage = state.storage;
     this.router = Router();
-    this.storageMap = new Map();
 
     // Traps for getting and setting props
     const handler = {
-      get: (target, key, receiver) => {
+      get: (target: any, key: string, receiver: any) => {
         // Reserved key to confirm this is a proxy
         if (key === 'isProxy') return true;
 
-        // console.log(`Getting ${target}.${key}`);
+        // console.log(`Getting ${target}.${typeof key === 'string' ? key : 'unknown'}`);
 
         const prop = target[key];
 
@@ -32,14 +36,14 @@ export class HyperDurable {
         }
 
         // If prop is a function, bind `this` to `receiver` (anything inheriting from HyperDurable)
-        return typeof target[key] === 'function' ? target[key].bind(receiver) : target[key];
+        return typeof target[key] === 'function' ? target[key].bind(target) : target[key];
       },
-      set: (target, key, value) => {
+      set: (target: any, key: string, value: any) => {
         // console.log(`Setting ${target}.${key} to equal ${value}`);
         
-        // Set flag to persist data
+        // Push key to persist data 
         if (target[key] !== value) {
-          this.state.dirty = true;
+          this.state.dirty.add(key);
         }
 
         target[key] = value;
@@ -60,7 +64,12 @@ export class HyperDurable {
   }
 
   async clear(): Promise<string> {
-    this.state.dirty = false;
+    this.state.dirty.clear();
+    return new Promise(() => 'false');
+  }
+
+  async persist(): Promise<string> {
+    return new Promise(() => 'true');
   }
 
   async fetch(request: Request): Promise<Response> {
