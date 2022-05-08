@@ -89,10 +89,12 @@ describe('HyperDurable', () => {
     });
 
     test('persists dirty data', async () => {
+      counter.counter = 2;
+      counter.objectLikeProp.push('three');
       await counter.persist();
       expect(counter.state.dirty).to.be.empty;
-      expect(await counter.storage.get('counter')).to.equal(1);
-      expect(await counter.storage.get('objectLikeProp')).to.deep.equal([]);
+      expect(await counter.storage.get('counter')).to.equal(2);
+      expect(await counter.storage.get('objectLikeProp')).to.deep.equal(['three']);
     });
   });
 
