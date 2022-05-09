@@ -9,13 +9,11 @@ interface HyperState extends DurableObjectState {
 export class HyperDurable implements DurableObject {
   readonly isProxy?: boolean;
   readonly original?: HyperDurable;
-  id: DurableObjectId | string;
   state: HyperState;
   storage: DurableObjectStorage;
   router: Router;
 
   constructor(state: DurableObjectState, env: unknown) {
-    this.id = state.id;
     this.state = state;
     this.state.dirty = new Set();
     this.state.savedKey = '';
@@ -35,7 +33,7 @@ export class HyperDurable implements DurableObject {
 
         const prop = target[key];
 
-        const reservedKeys = new Set(['id', 'state', 'storage', 'router']);
+        const reservedKeys = new Set(['state', 'storage', 'router']);
 
         // Recursively proxy any object-like properties, except reserved keys
         // This enables us to keep track of deeply-nested changes to props
@@ -84,7 +82,8 @@ export class HyperDurable implements DurableObject {
     this.state.dirty.clear();
   }
 
-  async persist(): Promise<boolean> {
+  // Persist all dirty props
+  async persist() {
     try {
       for (let key of this.state.dirty) {
         const value = this[key].isProxy ? this[key].original : this[key];
@@ -98,7 +97,18 @@ export class HyperDurable implements DurableObject {
     }
   }
 
-  async fetch(request: Request): Promise<Response> {
+  async destroy() {
+    try {
+      this.state.dirty.clear();
+      this.state.savedKey = '';
+      this.storage.deleteAll();
+    } catch(e) {
+      console.error(e);
+      return false;
+    }
+  }
+
+  async fetch(request: Request) {
     return new Response();
   }
 }
