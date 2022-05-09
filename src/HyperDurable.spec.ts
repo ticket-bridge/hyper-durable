@@ -116,7 +116,7 @@ describe('HyperDurable', () => {
         const request = new Request('api.hyperdurable.io/get/xyz');
         const response = await counter.fetch(request);
         expect(response.body).to.deep.equal({
-          message: 'property xyz does not exist'
+          message: 'Property xyz does not exist'
         });
       });
 
@@ -124,7 +124,7 @@ describe('HyperDurable', () => {
         const request = new Request('api.hyperdurable.io/get/increment');
         const response = await counter.fetch(request);
         expect(response.body).to.deep.equal({
-          message: 'cannot get method increment (try fetching /call/increment)'
+          message: 'Cannot get method increment (try fetching /call/increment)'
         });
       });
     });
@@ -156,18 +156,39 @@ describe('HyperDurable', () => {
         expect(await counter.storage.get('abc')).to.equal(99);
       });
 
-      test('/set throws when attempting to access a method', async () => {
-        const request = new Request('api.hyperdurable.io/set/increment');
+      test('/set throws with no posted value', async () => {
+        const request = new Request('api.hyperdurable.io/set/counter', {
+          body: JSON.stringify({}),
+          method: 'POST'
+        });
         const response = await counter.fetch(request);
         expect(response.body).to.deep.equal({
-          message: 'cannot set method increment (try fetching /call/increment)'
+          message: 'Missing value field in body. Request body should be { value: "some-value" }'
+        });
+      });
+
+      test('/set throws when attempting to access a method', async () => {
+        const request = new Request('api.hyperdurable.io/set/increment', {
+          body: JSON.stringify({
+            value: 99
+          }),
+          method: 'POST'
+        });
+        const response = await counter.fetch(request);
+        expect(response.body).to.deep.equal({
+          message: 'Cannot set method increment (try fetching /call/increment)'
         });
       });
     });
     
     describe('/call', () => {
       test('/call calls method with no parameters and returns result', async () => {
-        const request = new Request('api.hyperdurable.io/call/increment');
+        const request = new Request('api.hyperdurable.io/call/increment', {
+          body: JSON.stringify({
+            args: {}
+          }),
+          method: 'POST'
+        });
         const response = await counter.fetch(request);
         expect(response.body).to.equal(undefined);
         expect(counter.counter).to.equal(2);
@@ -190,7 +211,7 @@ describe('HyperDurable', () => {
         const request = new Request('api.hyperdurable.io/call/counter');
         const response = await counter.fetch(request);
         expect(response.body).to.deep.equal({
-          message: 'cannot call property counter (try fetching /get/counter)'
+          message: 'Cannot call property counter (try fetching /get/counter)'
         });
       });
 
@@ -205,7 +226,7 @@ describe('HyperDurable', () => {
         });
         const response = await counter.fetch(request);
         expect(response.body).to.deep.equal({
-          message: 'cannot call method increment with provided args'
+          message: 'Cannot call method increment with provided args'
         });
       });
 
@@ -218,7 +239,7 @@ describe('HyperDurable', () => {
         });
         const response = await counter.fetch(request);
         expect(response.body).to.deep.equal({
-          message: 'cannot call method sayHello with provided args'
+          message: 'Cannot call method sayHello with provided args'
         });
       });
 
@@ -233,7 +254,7 @@ describe('HyperDurable', () => {
         });
         const response = await counter.fetch(request);
         expect(response.body).to.deep.equal({
-          message: 'cannot call method sayHello with provided args'
+          message: 'Cannot call method sayHello with provided args'
         });
       });
     });
