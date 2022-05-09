@@ -156,6 +156,14 @@ describe('HyperDurable', () => {
         expect(await counter.storage.get('abc')).to.equal(99);
       });
 
+      test('/set throws with non-POST method', async () => {
+        const request = new Request('api.hyperdurable.io/set/counter');
+        const response = await counter.fetch(request);
+        expect(response.body).to.deep.equal({
+          message: 'Cannot GET /set. Use a POST request with a body: { value: "some-value" }'
+        });
+      });
+
       test('/set throws with no posted value', async () => {
         const request = new Request('api.hyperdurable.io/set/counter', {
           body: JSON.stringify({}),
@@ -163,7 +171,7 @@ describe('HyperDurable', () => {
         });
         const response = await counter.fetch(request);
         expect(response.body).to.deep.equal({
-          message: 'Missing value field in body. Request body should be { value: "some-value" }'
+          message: 'Missing value field in body. Request body should be: { value: "some-value" }'
         });
       });
 
