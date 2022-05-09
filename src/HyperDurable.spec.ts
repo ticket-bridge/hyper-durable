@@ -124,7 +124,7 @@ describe('HyperDurable', () => {
         const request = new Request('api.hyperdurable.io/get/increment');
         const response = await counter.fetch(request);
         expect(response.body).to.deep.equal({
-          message: 'Cannot get method increment (try fetching /call/increment)'
+          message: 'Cannot get method increment (try POSTing /call/increment)'
         });
       });
     });
@@ -184,7 +184,7 @@ describe('HyperDurable', () => {
         });
         const response = await counter.fetch(request);
         expect(response.body).to.deep.equal({
-          message: 'Cannot set method increment (try fetching /call/increment)'
+          message: 'Cannot set method increment (try POSTing /call/increment)'
         });
       });
     });
@@ -219,7 +219,7 @@ describe('HyperDurable', () => {
         const request = new Request('api.hyperdurable.io/call/counter');
         const response = await counter.fetch(request);
         expect(response.body).to.deep.equal({
-          message: 'Cannot call property counter (try fetching /get/counter)'
+          message: 'Cannot call property counter (try GETing /get/counter)'
         });
       });
 
