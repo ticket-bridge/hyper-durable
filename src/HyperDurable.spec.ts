@@ -114,7 +114,7 @@ describe('HyperDurable', () => {
         });
       });
 
-      test('/get throws when requesting nonexistent key', async () => {
+      test('/get throws when requesting a nonexistent key', async () => {
         const request = new Request('https://hd.io/get/xyz');
         const response = await counter.fetch(request);
         expect(await response.json()).to.deep.equal({
@@ -127,6 +127,19 @@ describe('HyperDurable', () => {
         const response = await counter.fetch(request);
         expect(await response.json()).to.deep.equal({
           value: 'Cannot get method increment (try POSTing /call/increment)'
+        });
+      });
+
+      test('/get throws with a malformed path', async () => {
+        const request = new Request('https://hd.io/get/counter/hello');
+        const response = await counter.fetch(request);
+        expect(await response.json()).to.deep.equal({
+          errors: [
+            {
+              message: 'Not found',
+              details: 'Could not match this route to an operation'
+            }
+          ]
         });
       });
     });
