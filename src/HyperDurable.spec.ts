@@ -118,7 +118,12 @@ describe('HyperDurable', () => {
         const request = new Request('https://hd.io/get/xyz');
         const response = await counter.fetch(request);
         expect(await response.json()).to.deep.equal({
-          value: 'Property xyz does not exist'
+          errors: [
+            {
+              message: 'Property xyz does not exist',
+              details: ''
+            }
+          ]
         });
       });
 
@@ -126,7 +131,12 @@ describe('HyperDurable', () => {
         const request = new Request('https://hd.io/get/increment');
         const response = await counter.fetch(request);
         expect(await response.json()).to.deep.equal({
-          value: 'Cannot get method increment (try POSTing /call/increment)'
+          errors: [
+            {
+              message: 'Cannot get method increment',
+              details: 'Try POSTing /call/increment'
+            }
+          ]
         });
       });
 
@@ -134,6 +144,7 @@ describe('HyperDurable', () => {
         const request = new Request('https://hd.io/get/counter/hello');
         const response = await counter.fetch(request);
         expect(await response.json()).to.deep.equal({
+          
           errors: [
             {
               message: 'Not found',
@@ -153,7 +164,9 @@ describe('HyperDurable', () => {
           method: 'POST'
         });
         const response = await counter.fetch(request);
-        expect(await response.json()).to.equal(5);
+        expect(await response.json()).to.deep.equal({
+          value: 5
+        });
         expect(counter.counter).to.equal(5);
         expect(await counter.storage.get('counter')).to.equal(5);
       });
@@ -166,7 +179,9 @@ describe('HyperDurable', () => {
           method: 'POST'
         });
         const response = await counter.fetch(request);
-        expect(await response.json()).to.equal(99);
+        expect(await response.json()).to.deep.equal({
+          value: 99
+        });
         expect(counter.abc).to.equal(99);
         expect(await counter.storage.get('abc')).to.equal(99);
       });
@@ -186,7 +201,12 @@ describe('HyperDurable', () => {
         });
         const response = await counter.fetch(request);
         expect(await response.json()).to.deep.equal({
-          message: 'Missing value field in body. Request body should be: { value: "some-value" }'
+          errors: [
+            {
+              message: 'Unknown value',
+              details: 'Request body should be: { value: "some-value" }'
+            }
+          ]
         });
       });
 

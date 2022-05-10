@@ -8,7 +8,7 @@ interface HyperState extends DurableObjectState {
 
 export class HyperDurable<Env = unknown> implements DurableObject {
   readonly isProxy?: boolean;
-  readonly original?: HyperDurable;
+  readonly original?: any;
   env: Env;
   state: HyperState;
   storage: DurableObjectStorage;
@@ -62,7 +62,7 @@ export class HyperDurable<Env = unknown> implements DurableObject {
           }
         }
 
-        target[key] = value;
+        Reflect.set(target, key, value);
         return true;
       }
     };
@@ -77,20 +77,57 @@ export class HyperDurable<Env = unknown> implements DurableObject {
 
         if (typeof value === 'function') {
           return new Response(JSON.stringify({
-            value: `Cannot get method ${key} (try POSTing /call/${key})`
+            errors: [
+              {
+                message: `Cannot get method ${key}`,
+                details: `Try POSTing /call/${key}`
+              }
+            ]
           }));
         } else if (typeof value === 'undefined') {
           return new Response(JSON.stringify({
-            value: `Property ${key} does not exist`
+            errors: [
+              {
+                message: `Property ${key} does not exist`,
+                details: ''
+              }
+            ]
           }));
         }
         return new Response(JSON.stringify({
           value
         }));
       })
-      .post('/set/:key', request => {
+      .post('/set/:key', async request => {
+        const key = request.params.key;
+        const json = await request.json();
+        const currentValue = this[key];
+        const newValue = json.value;
+
+        if (newValue === undefined) {
+          return new Response(JSON.stringify({
+            errors: [
+              {
+                message: 'Unknown value',
+                details: 'Request body should be: { value: "some-value" }'
+              }
+            ]
+          }));
+        }
+
+        if (typeof currentValue === 'function') {
+          return new Response(JSON.stringify({
+            errors: [
+              {
+                message: `Cannot set method ${key}`,
+                details: `Try POSTing /call/${key}`
+              }
+            ]
+          }));
+        }
+        this[key] = newValue;
         return new Response(JSON.stringify({
-          value: 5
+          value: newValue
         }));
       })
       .post('/call/:key', request => {
@@ -146,11 +183,18 @@ export class HyperDurable<Env = unknown> implements DurableObject {
   async fetch(request: Request): Promise<Response> {
     return this.router
       .handle(request)
+      .then(async response => {
+        if (this.state.dirty.size > 0) {
+          await this.persist();
+        }
+        return response;
+      })
       .catch(e => {
         return new Response(JSON.stringify({
           errors: [
             {
-              message: e.message || 'Internal Server Error'
+              message: e.message || 'Internal Server Error',
+              details: e.details || ''
             }
           ]
         }), { status: e.status || 500 });
