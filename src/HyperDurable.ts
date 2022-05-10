@@ -3,7 +3,7 @@ import { DurableObjectState, DurableObjectStorage } from '@miniflare/durable-obj
 
 interface HyperState extends DurableObjectState {
   dirty?: Set<string>;
-  savedKey?: string;
+  tempKey?: string;
 }
 
 export class HyperDurable implements DurableObject {
@@ -16,7 +16,7 @@ export class HyperDurable implements DurableObject {
   constructor(state: DurableObjectState, env: unknown) {
     this.state = state;
     this.state.dirty = new Set();
-    this.state.savedKey = '';
+    this.state.tempKey = '';
     this.storage = state.storage;
     this.router = Router();
 
@@ -43,7 +43,7 @@ export class HyperDurable implements DurableObject {
 
         // If we're getting a proxied top-level property of the Durable Object,
         // save the key to persist the deeply-nested property
-        if (target[key].isProxy && this === target) this.state.savedKey = key;
+        if (target[key].isProxy && this === target) this.state.tempKey = key;
 
         // If prop is a function, bind `this`
         return typeof target[key] === 'function' ? target[key].bind(receiver) : target[key];
@@ -56,7 +56,7 @@ export class HyperDurable implements DurableObject {
           if (this === target) {
             this.state.dirty.add(key);
           } else {
-            this.state.dirty.add(this.state.savedKey);
+            this.state.dirty.add(this.state.tempKey);
           }
         }
 
@@ -100,7 +100,7 @@ export class HyperDurable implements DurableObject {
   async destroy() {
     try {
       this.state.dirty.clear();
-      this.state.savedKey = '';
+      this.state.tempKey = '';
       this.storage.deleteAll();
     } catch(e) {
       console.error(e);
