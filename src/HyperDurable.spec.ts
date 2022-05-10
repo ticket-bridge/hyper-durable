@@ -107,13 +107,13 @@ describe('HyperDurable', () => {
   describe('fetch', () => {
     describe('/get', () => {
       test('/get returns value from memory', async () => {
-        const request = new Request('api.hyperdurable.io/get/counter');
+        const request = new Request('https://api.hyperdurable.io/get/counter');
         const response = await counter.fetch(request);
         expect(response.body).to.equal(1);
       });
 
       test('/get throws when requesting nonexistent key', async () => {
-        const request = new Request('api.hyperdurable.io/get/xyz');
+        const request = new Request('https://api.hyperdurable.io/get/xyz');
         const response = await counter.fetch(request);
         expect(response.body).to.deep.equal({
           message: 'Property xyz does not exist'
@@ -121,7 +121,7 @@ describe('HyperDurable', () => {
       });
 
       test('/get throws when attempting to access a method', async () => {
-        const request = new Request('api.hyperdurable.io/get/increment');
+        const request = new Request('https://api.hyperdurable.io/get/increment');
         const response = await counter.fetch(request);
         expect(response.body).to.deep.equal({
           message: 'Cannot get method increment (try POSTing /call/increment)'
@@ -131,7 +131,7 @@ describe('HyperDurable', () => {
     
     describe('/set', () => {
       test('/set changes value in memory, persists data, and returns value', async () => {
-        const request = new Request('api.hyperdurable.io/set/counter', {
+        const request = new Request('https://api.hyperdurable.io/set/counter', {
           body: JSON.stringify({
             value: 5
           }),
@@ -144,7 +144,7 @@ describe('HyperDurable', () => {
       });
 
       test('/set adds new properties in memory, persists data, and returns value', async () => {
-        const request = new Request('api.hyperdurable.io/set/abc', {
+        const request = new Request('https://api.hyperdurable.io/set/abc', {
           body: JSON.stringify({
             value: 99
           }),
@@ -157,7 +157,7 @@ describe('HyperDurable', () => {
       });
 
       test('/set throws with non-POST method', async () => {
-        const request = new Request('api.hyperdurable.io/set/counter');
+        const request = new Request('https://api.hyperdurable.io/set/counter');
         const response = await counter.fetch(request);
         expect(response.body).to.deep.equal({
           message: 'Cannot GET /set. Use a POST request with a body: { value: "some-value" }'
@@ -165,7 +165,7 @@ describe('HyperDurable', () => {
       });
 
       test('/set throws with no posted value', async () => {
-        const request = new Request('api.hyperdurable.io/set/counter', {
+        const request = new Request('https://api.hyperdurable.io/set/counter', {
           body: JSON.stringify({}),
           method: 'POST'
         });
@@ -176,7 +176,7 @@ describe('HyperDurable', () => {
       });
 
       test('/set throws when attempting to access a method', async () => {
-        const request = new Request('api.hyperdurable.io/set/increment', {
+        const request = new Request('https://api.hyperdurable.io/set/increment', {
           body: JSON.stringify({
             value: 99
           }),
@@ -191,7 +191,7 @@ describe('HyperDurable', () => {
     
     describe('/call', () => {
       test('/call calls method with no parameters and returns result', async () => {
-        const request = new Request('api.hyperdurable.io/call/increment', {
+        const request = new Request('https://api.hyperdurable.io/call/increment', {
           body: JSON.stringify({
             args: {}
           }),
@@ -203,7 +203,7 @@ describe('HyperDurable', () => {
       });
 
       test('/call calls method with arguments from body and returns result', async () => {
-        const request = new Request('api.hyperdurable.io/call/sayHello', {
+        const request = new Request('https://api.hyperdurable.io/call/sayHello', {
           body: JSON.stringify({
             args: {
               0: 'HyperDurable'
@@ -216,7 +216,7 @@ describe('HyperDurable', () => {
       });
 
       test('/call throws when attempting to call a property', async () => {
-        const request = new Request('api.hyperdurable.io/call/counter');
+        const request = new Request('https://api.hyperdurable.io/call/counter');
         const response = await counter.fetch(request);
         expect(response.body).to.deep.equal({
           message: 'Cannot call property counter (try GETing /get/counter)'
@@ -224,7 +224,7 @@ describe('HyperDurable', () => {
       });
 
       test('/call throws when calling a method with too many arguments', async () => {
-        const request = new Request('api.hyperdurable.io/call/increment', {
+        const request = new Request('https://api.hyperdurable.io/call/increment', {
           body: JSON.stringify({
             args: {
               0: 'wrongArg'
@@ -239,7 +239,7 @@ describe('HyperDurable', () => {
       });
 
       test('/call throws when calling a method with too few arguments', async () => {
-        const request = new Request('api.hyperdurable.io/call/sayHello', {
+        const request = new Request('https://api.hyperdurable.io/call/sayHello', {
           body: JSON.stringify({
             args: {}
           }),
@@ -252,7 +252,7 @@ describe('HyperDurable', () => {
       });
 
       test('/call throws when calling a method with incorrectly named arguments', async () => {
-        const request = new Request('api.hyperdurable.io/call/sayHello', {
+        const request = new Request('https://api.hyperdurable.io/call/sayHello', {
           body: JSON.stringify({
             args: {
               name: 'wrongArg'
