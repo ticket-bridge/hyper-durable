@@ -71,10 +71,43 @@ export class HyperDurable<Env = unknown> implements DurableObject {
 
     // All operations flow through this router
     this.router
-      .get('/get/:key', () => {})
-      .post('/set/:key', () => {})
-      .post('/call/:key', () => {})
-      .all('*', () => {});
+      .get('/get/:key', request => {
+        const key = request.params.key;
+        const value = this[key];
+
+        if (typeof value === 'function') {
+          return new Response(JSON.stringify({
+            value: `Cannot get method ${key} (try POSTing /call/${key})`
+          }));
+        } else if (typeof value === 'undefined') {
+          return new Response(JSON.stringify({
+            value: `Property ${key} does not exist`
+          }));
+        }
+        return new Response(JSON.stringify({
+          value
+        }));
+      })
+      .post('/set/:key', request => {
+        return new Response(JSON.stringify({
+          value: 5
+        }));
+      })
+      .post('/call/:key', request => {
+        return new Response(JSON.stringify({
+          value: 5
+        }));
+      })
+      .all('*', request => {
+        return new Response(JSON.stringify({
+          errors: [
+            {
+              message: 'Not found',
+              details: 'Could not match this route to an operation'
+            }
+          ]
+        }), { status: 404 })
+      });
 
     return hyperProxy;
   }
@@ -110,7 +143,17 @@ export class HyperDurable<Env = unknown> implements DurableObject {
     }
   }
 
-  async fetch(request: Request) {
-    return new Response();
+  async fetch(request: Request): Promise<Response> {
+    return this.router
+      .handle(request)
+      .catch(e => {
+        return new Response(JSON.stringify({
+          errors: [
+            {
+              message: e.message || 'Internal Server Error'
+            }
+          ]
+        }), { status: e.status || 500 });
+      });
   }
 }
