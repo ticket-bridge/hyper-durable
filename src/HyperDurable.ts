@@ -6,14 +6,16 @@ interface HyperState extends DurableObjectState {
   tempKey?: string;
 }
 
-export class HyperDurable implements DurableObject {
+export class HyperDurable<Env = unknown> implements DurableObject {
   readonly isProxy?: boolean;
   readonly original?: HyperDurable;
+  env: Env;
   state: HyperState;
   storage: DurableObjectStorage;
   router: Router;
 
-  constructor(state: DurableObjectState, env: unknown) {
+  constructor(state: DurableObjectState, env: Env) {
+    this.env = env;
     this.state = state;
     this.state.dirty = new Set();
     this.state.tempKey = '';
