@@ -144,7 +144,6 @@ describe('HyperDurable', () => {
         const request = new Request('https://hd.io/get/counter/hello');
         const response = await counter.fetch(request);
         expect(await response.json()).to.deep.equal({
-          
           errors: [
             {
               message: 'Not found',
@@ -190,8 +189,14 @@ describe('HyperDurable', () => {
         const request = new Request('https://hd.io/set/counter');
         const response = await counter.fetch(request);
         expect(await response.json()).to.deep.equal({
-          message: 'Cannot GET /set. Use a POST request with a body: { value: "some-value" }'
+          errors: [
+            {
+              message: 'Cannot GET /set',
+              details: 'Use a POST request with a body: { value: "some-value" }'
+            }
+          ]
         });
+        expect(response.headers.get('allow')).to.equal('POST');
       });
 
       test('/set throws with no posted value', async () => {
@@ -219,7 +224,12 @@ describe('HyperDurable', () => {
         });
         const response = await counter.fetch(request);
         expect(await response.json()).to.deep.equal({
-          message: 'Cannot set method increment (try POSTing /call/increment)'
+          errors: [
+            {
+              message: 'Cannot set method increment',
+              details: 'Try POSTing /call/increment'
+            }
+          ]
         });
       });
     });

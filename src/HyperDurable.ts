@@ -1,5 +1,6 @@
 import { Router } from 'itty-router';
 import { DurableObjectState, DurableObjectStorage } from '@miniflare/durable-objects';
+import { HyperError } from './HyperError';
 
 interface HyperState extends DurableObjectState {
   dirty?: Set<string>;
@@ -35,6 +36,9 @@ export class HyperDurable<Env = unknown> implements DurableObject {
 
         const prop = target[key];
 
+        // Short-circuit if can't access 
+        if (!prop) return Reflect.get(target, key, receiver);
+
         const reservedKeys = new Set(['state', 'storage', 'router']);
 
         // Recursively proxy any object-like properties, except reserved keys
@@ -48,7 +52,9 @@ export class HyperDurable<Env = unknown> implements DurableObject {
         if (target[key].isProxy && this === target) this.state.tempKey = key;
 
         // If prop is a function, bind `this`
-        return typeof target[key] === 'function' ? target[key].bind(receiver) : target[key];
+        return typeof target[key] === 'function'
+          ? target[key].bind(receiver)
+          : Reflect.get(target, key, receiver);
       },
       set: (target: any, key: string, value: any) => {
         // console.log(`Setting ${target}.${key} to equal ${value}`);
@@ -73,27 +79,17 @@ export class HyperDurable<Env = unknown> implements DurableObject {
     this.router
       .get('/get/:key', request => {
         const key = request.params.key;
-        const value = this[key];
+        const value = hyperProxy[key];
 
         if (typeof value === 'function') {
-          return new Response(JSON.stringify({
-            errors: [
-              {
-                message: `Cannot get method ${key}`,
-                details: `Try POSTing /call/${key}`
-              }
-            ]
-          }));
+          throw new HyperError(`Cannot get method ${key}`, {
+            details: `Try POSTing /call/${key}`,
+            status: 400
+          });
         } else if (typeof value === 'undefined') {
-          return new Response(JSON.stringify({
-            errors: [
-              {
-                message: `Property ${key} does not exist`,
-                details: ''
-              }
-            ]
-          }));
+          throw new HyperError(`Property ${key} does not exist`, { status: 400 });
         }
+
         return new Response(JSON.stringify({
           value
         }));
@@ -101,31 +97,23 @@ export class HyperDurable<Env = unknown> implements DurableObject {
       .post('/set/:key', async request => {
         const key = request.params.key;
         const json = await request.json();
-        const currentValue = this[key];
+        const currentValue = hyperProxy[key];
         const newValue = json.value;
 
         if (newValue === undefined) {
-          return new Response(JSON.stringify({
-            errors: [
-              {
-                message: 'Unknown value',
-                details: 'Request body should be: { value: "some-value" }'
-              }
-            ]
-          }));
+          throw new HyperError('Unknown value', {
+            details: 'Request body should be: { value: "some-value" }',
+            status: 400
+          });
+        }
+        if (typeof currentValue === 'function') {
+          throw new HyperError(`Cannot set method ${key}`, {
+            details: `Try POSTing /call/${key}`,
+            status: 400
+          });
         }
 
-        if (typeof currentValue === 'function') {
-          return new Response(JSON.stringify({
-            errors: [
-              {
-                message: `Cannot set method ${key}`,
-                details: `Try POSTing /call/${key}`
-              }
-            ]
-          }));
-        }
-        this[key] = newValue;
+        hyperProxy[key] = newValue;
         return new Response(JSON.stringify({
           value: newValue
         }));
@@ -135,15 +123,41 @@ export class HyperDurable<Env = unknown> implements DurableObject {
           value: 5
         }));
       })
-      .all('*', request => {
-        return new Response(JSON.stringify({
-          errors: [
-            {
-              message: 'Not found',
-              details: 'Could not match this route to an operation'
+      .all('*', ({ url, method }) => {
+        const pathname = new URL(url).pathname;
+        method = method.toUpperCase();
+        switch(pathname.split('/')[1]) {
+          case('get'):
+            if (method !== 'GET') {
+              throw new HyperError(`Cannot ${method} /get`, {
+                details: 'Use a GET request',
+                status: 405,
+                allow: 'GET'
+              });
             }
-          ]
-        }), { status: 404 })
+            break;
+          case('set'):
+            if (method !== 'POST') {
+              throw new HyperError(`Cannot ${method} /set`, {
+                details: 'Use a POST request with a body: { value: "some-value" }',
+                status: 405,
+                allow: 'POST'
+              });
+            }
+          case('call'):
+            if (method !== 'POST') {
+              throw new HyperError(`Cannot ${method} /call`, {
+                details: 'Use a POST request with a body: { args: { 0: "some-value" } }',
+                status: 405,
+                allow: 'POST'
+              });
+            }
+            break;
+        }
+        throw new HyperError('Not found', {
+          details: 'Could not match this route to an operation',
+          status: 404
+        });
       });
 
     return hyperProxy;
@@ -164,8 +178,9 @@ export class HyperDurable<Env = unknown> implements DurableObject {
       }
       return true;
     } catch(e) {
-      console.error(e);
-      return false;
+      throw new HyperError('Something went wrong while persisting object', {
+        details: e.message || ''
+      });
     }
   }
 
@@ -175,8 +190,9 @@ export class HyperDurable<Env = unknown> implements DurableObject {
       this.state.tempKey = '';
       this.storage.deleteAll();
     } catch(e) {
-      console.error(e);
-      return false;
+      throw new HyperError('Something went wrong while destroying object', {
+        details: e.message || ''
+      });
     }
   }
 
@@ -197,7 +213,13 @@ export class HyperDurable<Env = unknown> implements DurableObject {
               details: e.details || ''
             }
           ]
-        }), { status: e.status || 500 });
+        }),
+        {
+          status: e.status || 500,
+          headers: e.allow ? {
+            Allow: e.allow
+          } : {}
+        });
       });
   }
 }
