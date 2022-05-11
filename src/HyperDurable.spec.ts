@@ -284,12 +284,14 @@ describe('HyperDurable', () => {
       test('/call calls method with no parameters and returns result', async () => {
         const request = new Request('https://hd.io/call/increment', {
           body: JSON.stringify({
-            args: {}
+            args: []
           }),
           method: 'POST'
         });
         const response = await counter.fetch(request);
-        expect(await response.json()).to.equal(undefined);
+        expect(await response.json()).to.deep.equal({
+          value: null
+        });
         expect(response.status).to.equal(200);
         expect(counter.counter).to.equal(2);
       });
@@ -297,68 +299,51 @@ describe('HyperDurable', () => {
       test('/call calls method with arguments from body and returns result', async () => {
         const request = new Request('https://hd.io/call/sayHello', {
           body: JSON.stringify({
-            args: {
-              0: 'HyperDurable'
-            }
+            args: ['HyperDurable']
           }),
           method: 'POST'
         });
         const response = await counter.fetch(request);
-        expect(await response.json()).to.equal('Hello HyperDurable!');
+        expect(await response.json()).to.deep.equal({
+          value: 'Hello HyperDurable!'
+        });
         expect(response.status).to.equal(200);
       });
 
-      test('/call throws when attempting to call a property', async () => {
-        const request = new Request('https://hd.io/call/counter');
+      test('/call throws when calling a property', async () => {
+        const request = new Request('https://hd.io/call/counter', {
+          body: JSON.stringify({
+            args: []
+          }),
+          method: 'POST'
+        });
         const response = await counter.fetch(request);
         expect(await response.json()).to.deep.equal({
-          message: 'Cannot call property counter (try GETing /get/counter)'
+          errors: [
+            {
+              message: 'Cannot call property counter',
+              details: 'Try GETing /get/counter'
+            }
+          ]
         });
         expect(response.status).to.equal(404);
       });
 
-      test('/call throws when calling a method with too many arguments', async () => {
-        const request = new Request('https://hd.io/call/increment', {
-          body: JSON.stringify({
-            args: {
-              0: 'wrongArg'
-            }
-          }),
-          method: 'POST'
-        });
-        const response = await counter.fetch(request);
-        expect(await response.json()).to.deep.equal({
-          message: 'Cannot call method increment with provided args'
-        });
-        expect(response.status).to.equal(400);
-      });
-
-      test('/call throws when calling a method with too few arguments', async () => {
+      test('/call throws when calling a method with incorrectly constructed arguments', async () => {
         const request = new Request('https://hd.io/call/sayHello', {
           body: JSON.stringify({
-            args: {}
+            args: { 0: 'wrongArg' }
           }),
           method: 'POST'
         });
         const response = await counter.fetch(request);
         expect(await response.json()).to.deep.equal({
-          message: 'Cannot call method sayHello with provided args'
-        });
-        expect(response.status).to.equal(400);
-      });
-
-      test('/call throws when calling a method with incorrectly named arguments', async () => {
-        const request = new Request('https://hd.io/call/sayHello', {
-          body: JSON.stringify({
-            args: {
-              name: 'wrongArg'
+          errors: [
+            {
+              message: 'Unknown arguments',
+              details: 'Request body should be: { args: ["someArg"] }'
             }
-          }),
-          method: 'POST'
-        });
-        const response = await counter.fetch(request);
-        expect(await response.json()).to.deep.equal({
-          message: 'Cannot call method sayHello with provided args'
+          ]
         });
         expect(response.status).to.equal(400);
       });

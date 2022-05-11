@@ -97,7 +97,6 @@ export class HyperDurable<Env = unknown> implements DurableObject {
       .post('/set/:key', async request => {
         const key = request.params.key;
         const json = await request.json();
-        const currentValue = hyperProxy[key];
         const newValue = json.value;
 
         if (newValue === undefined) {
@@ -106,7 +105,7 @@ export class HyperDurable<Env = unknown> implements DurableObject {
             status: 400
           });
         }
-        if (typeof currentValue === 'function') {
+        if (typeof hyperProxy[key] === 'function') {
           throw new HyperError(`Cannot set method ${key}`, {
             details: `Try POSTing /call/${key}`,
             status: 404
@@ -118,9 +117,35 @@ export class HyperDurable<Env = unknown> implements DurableObject {
           value: newValue
         }));
       })
-      .post('/call/:key', request => {
+      .post('/call/:key', async request => {
+        const key = request.params.key;
+        const json = await request.json();
+        const { args } = json;
+
+        if (args === undefined || !Array.isArray(args)) {
+          throw new HyperError('Unknown arguments', {
+            details: 'Request body should be: { args: ["someArg"] }',
+            status: 400
+          });
+        }
+        if (typeof hyperProxy[key] !== 'function') {
+          throw new HyperError(`Cannot call property ${key}`, {
+            details: `Try GETing /get/${key}`,
+            status: 404
+          });
+        }
+
+        let value: any;
+
+        try {
+          console.log(`calling ${key} with ${args}`);
+          value = hyperProxy[key](...args);
+        } catch(e) {
+          throw new HyperError('');
+        }
+
         return new Response(JSON.stringify({
-          value: 5
+          value: value ? value : null
         }));
       })
       .all('*', ({ url, method }) => {
