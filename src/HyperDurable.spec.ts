@@ -112,6 +112,7 @@ describe('HyperDurable', () => {
         expect(await response.json()).to.deep.equal({
           value: 1
         });
+        expect(response.status).to.equal(200);
       });
 
       test('/get throws when requesting a nonexistent key', async () => {
@@ -125,6 +126,7 @@ describe('HyperDurable', () => {
             }
           ]
         });
+        expect(response.status).to.equal(404);
       });
 
       test('/get throws when attempting to access a method', async () => {
@@ -138,6 +140,7 @@ describe('HyperDurable', () => {
             }
           ]
         });
+        expect(response.status).to.equal(400);
       });
 
       test('/get throws with non-GET method', async () => {
@@ -155,6 +158,7 @@ describe('HyperDurable', () => {
           ]
         });
         expect(response.headers.get('allow')).to.equal('GET');
+        expect(response.status).to.equal(405);
       });
 
       test('/get throws with a malformed path', async () => {
@@ -164,10 +168,11 @@ describe('HyperDurable', () => {
           errors: [
             {
               message: 'Not found',
-              details: 'Could not match this route to an operation'
+              details: ''
             }
           ]
         });
+        expect(response.status).to.equal(404);
       });
     });
     
@@ -183,6 +188,7 @@ describe('HyperDurable', () => {
         expect(await response.json()).to.deep.equal({
           value: 5
         });
+        expect(response.status).to.equal(200);
         expect(counter.counter).to.equal(5);
         expect(await counter.storage.get('counter')).to.equal(5);
       });
@@ -198,38 +204,9 @@ describe('HyperDurable', () => {
         expect(await response.json()).to.deep.equal({
           value: 99
         });
+        expect(response.status).to.equal(200);
         expect(counter.abc).to.equal(99);
         expect(await counter.storage.get('abc')).to.equal(99);
-      });
-
-      test('/set throws with non-POST method', async () => {
-        const request = new Request('https://hd.io/set/counter');
-        const response = await counter.fetch(request);
-        expect(await response.json()).to.deep.equal({
-          errors: [
-            {
-              message: 'Cannot GET /set',
-              details: 'Use a POST request with a body: { value: "some-value" }'
-            }
-          ]
-        });
-        expect(response.headers.get('allow')).to.equal('POST');
-      });
-
-      test('/set throws with no posted value', async () => {
-        const request = new Request('https://hd.io/set/counter', {
-          body: JSON.stringify({}),
-          method: 'POST'
-        });
-        const response = await counter.fetch(request);
-        expect(await response.json()).to.deep.equal({
-          errors: [
-            {
-              message: 'Unknown value',
-              details: 'Request body should be: { value: "some-value" }'
-            }
-          ]
-        });
       });
 
       test('/set throws when attempting to access a method', async () => {
@@ -248,6 +225,58 @@ describe('HyperDurable', () => {
             }
           ]
         });
+        expect(response.status).to.equal(404);
+      });
+
+      test('/set throws with non-POST method', async () => {
+        const request = new Request('https://hd.io/set/counter');
+        const response = await counter.fetch(request);
+        expect(await response.json()).to.deep.equal({
+          errors: [
+            {
+              message: 'Cannot GET /set',
+              details: 'Use a POST request with a body: { value: "some-value" }'
+            }
+          ]
+        });
+        expect(response.headers.get('allow')).to.equal('POST');
+        expect(response.status).to.equal(405);
+      });
+
+      test('/set throws with a malformed path', async () => {
+        const request = new Request('https://hd.io/set/counter/hello', {
+          body: JSON.stringify({
+            value: 5
+          }),
+          method: 'POST'
+        });
+        const response = await counter.fetch(request);
+        expect(await response.json()).to.deep.equal({
+          errors: [
+            {
+              message: 'Not found',
+              details: ''
+            }
+          ]
+        });
+        expect(response.status).to.equal(404);
+      });
+
+      test('/set throws with no posted value', async () => {
+        const request = new Request('https://hd.io/set/counter', {
+          body: JSON.stringify({}),
+          method: 'POST'
+        });
+        const response = await counter.fetch(request);
+        expect(await response.json()).to.deep.equal({
+          errors: [
+            {
+              message: 'Unknown value',
+              details: 'Request body should be: { value: "some-value" }'
+            }
+          ]
+        });
+        expect(response.status).to.equal(400);
       });
     });
     
@@ -261,6 +290,7 @@ describe('HyperDurable', () => {
         });
         const response = await counter.fetch(request);
         expect(await response.json()).to.equal(undefined);
+        expect(response.status).to.equal(200);
         expect(counter.counter).to.equal(2);
       });
 
@@ -275,6 +305,7 @@ describe('HyperDurable', () => {
         });
         const response = await counter.fetch(request);
         expect(await response.json()).to.equal('Hello HyperDurable!');
+        expect(response.status).to.equal(200);
       });
 
       test('/call throws when attempting to call a property', async () => {
@@ -283,6 +314,7 @@ describe('HyperDurable', () => {
         expect(await response.json()).to.deep.equal({
           message: 'Cannot call property counter (try GETing /get/counter)'
         });
+        expect(response.status).to.equal(404);
       });
 
       test('/call throws when calling a method with too many arguments', async () => {
@@ -298,6 +330,7 @@ describe('HyperDurable', () => {
         expect(await response.json()).to.deep.equal({
           message: 'Cannot call method increment with provided args'
         });
+        expect(response.status).to.equal(400);
       });
 
       test('/call throws when calling a method with too few arguments', async () => {
@@ -311,6 +344,7 @@ describe('HyperDurable', () => {
         expect(await response.json()).to.deep.equal({
           message: 'Cannot call method sayHello with provided args'
         });
+        expect(response.status).to.equal(400);
       });
 
       test('/call throws when calling a method with incorrectly named arguments', async () => {
@@ -326,6 +360,7 @@ describe('HyperDurable', () => {
         expect(await response.json()).to.deep.equal({
           message: 'Cannot call method sayHello with provided args'
         });
+        expect(response.status).to.equal(400);
       });
     });
   });

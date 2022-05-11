@@ -87,7 +87,7 @@ export class HyperDurable<Env = unknown> implements DurableObject {
             status: 400
           });
         } else if (typeof value === 'undefined') {
-          throw new HyperError(`Property ${key} does not exist`, { status: 400 });
+          throw new HyperError(`Property ${key} does not exist`, { status: 404 });
         }
 
         return new Response(JSON.stringify({
@@ -109,7 +109,7 @@ export class HyperDurable<Env = unknown> implements DurableObject {
         if (typeof currentValue === 'function') {
           throw new HyperError(`Cannot set method ${key}`, {
             details: `Try POSTing /call/${key}`,
-            status: 400
+            status: 404
           });
         }
 
@@ -155,10 +155,7 @@ export class HyperDurable<Env = unknown> implements DurableObject {
             }
             break;
         }
-        throw new HyperError('Not found', {
-          details: 'Could not match this route to an operation',
-          status: 404
-        });
+        throw new HyperError('Not found', { status: 404 });
       });
 
     return hyperProxy;
