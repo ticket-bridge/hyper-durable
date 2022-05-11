@@ -140,6 +140,23 @@ describe('HyperDurable', () => {
         });
       });
 
+      test('/get throws with non-GET method', async () => {
+        const request = new Request('https://hd.io/get/counter', {
+          body: JSON.stringify({}),
+          method: 'POST'
+        });
+        const response = await counter.fetch(request);
+        expect(await response.json()).to.deep.equal({
+          errors: [
+            {
+              message: 'Cannot POST /get',
+              details: 'Use a GET request'
+            }
+          ]
+        });
+        expect(response.headers.get('allow')).to.equal('GET');
+      });
+
       test('/get throws with a malformed path', async () => {
         const request = new Request('https://hd.io/get/counter/hello');
         const response = await counter.fetch(request);

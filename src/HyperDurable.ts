@@ -144,6 +144,7 @@ export class HyperDurable<Env = unknown> implements DurableObject {
                 allow: 'POST'
               });
             }
+            break;
           case('call'):
             if (method !== 'POST') {
               throw new HyperError(`Cannot ${method} /call`, {
