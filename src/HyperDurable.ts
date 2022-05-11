@@ -173,7 +173,7 @@ export class HyperDurable<Env = unknown> implements DurableObject {
           case('call'):
             if (method !== 'POST') {
               throw new HyperError(`Cannot ${method} /call`, {
-                details: 'Use a POST request with a body: { args: { 0: "some-value" } }',
+                details: 'Use a POST request with a body: { args: ["someArg"] }',
                 status: 405,
                 allow: 'POST'
               });

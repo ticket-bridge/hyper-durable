@@ -347,6 +347,40 @@ describe('HyperDurable', () => {
         });
         expect(response.status).to.equal(400);
       });
+
+      test('/call throws with non-POST method', async () => {
+        const request = new Request('https://hd.io/call/increment');
+        const response = await counter.fetch(request);
+        expect(await response.json()).to.deep.equal({
+          errors: [
+            {
+              message: 'Cannot GET /call',
+              details: 'Use a POST request with a body: { args: ["someArg"] }'
+            }
+          ]
+        });
+        expect(response.headers.get('allow')).to.equal('POST');
+        expect(response.status).to.equal(405);
+      });
+
+      test('/call throws with a malformed path', async () => {
+        const request = new Request('https://hd.io/call/counter/hello', {
+          body: JSON.stringify({
+            args: [5]
+          }),
+          method: 'POST'
+        });
+        const response = await counter.fetch(request);
+        expect(await response.json()).to.deep.equal({
+          errors: [
+            {
+              message: 'Not found',
+              details: ''
+            }
+          ]
+        });
+        expect(response.status).to.equal(404);
+      });
     });
   });
 });
