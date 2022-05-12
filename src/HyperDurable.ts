@@ -228,6 +228,7 @@ export class HyperDurable<Env = unknown> implements DurableObject {
   async destroy() {
     try {
       this.state.dirty.clear();
+      this.state.persisted.clear();
       this.state.tempKey = '';
       this.storage.deleteAll();
     } catch(e) {

@@ -92,6 +92,16 @@ describe('HyperDurable', () => {
       expect(await counter.storage.list()).to.deep.equal(new Map());
     });
 
+    test('initializes with previously persisted properties', async () => {
+      const id = new DurableObjectId('testName', 'testHexId');
+      const storage = new DurableObjectStorage(new MemoryStorage());
+      storage.put('abc', 5);
+      storage.put('persisted', new Set(['abc']));
+      const state = new DurableObjectState(id, storage);
+      counter = new Counter(state, {});
+      expect(await counter.storage.get('abc')).to.equal(5);
+    });
+
     test('persists dirty data', async () => {
       counter.counter = 2;
       counter.objectLikeProp.push('three');
