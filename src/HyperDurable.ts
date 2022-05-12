@@ -141,7 +141,10 @@ export class HyperDurable<Env = unknown> implements DurableObject {
           console.log(`calling ${key} with ${args}`);
           value = hyperProxy[key](...args);
         } catch(e) {
-          throw new HyperError('');
+          throw new HyperError('Problem while calling method', {
+            details: e.message || '',
+            status: 500
+          });
         }
 
         return new Response(JSON.stringify({

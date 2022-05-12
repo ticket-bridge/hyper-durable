@@ -28,6 +28,10 @@ describe('HyperDurable', () => {
     sayHello(name: string) {
       return `Hello ${name}!`;
     }
+
+    throws() {
+      throw new Error('Mistake');
+    }
   }
   let counter: Counter | undefined;
 
@@ -308,6 +312,25 @@ describe('HyperDurable', () => {
           value: 'Hello HyperDurable!'
         });
         expect(response.status).to.equal(200);
+      });
+
+      test('/call bubbles up errors from method', async () => {
+        const request = new Request('https://hd.io/call/throws', {
+          body: JSON.stringify({
+            args: []
+          }),
+          method: 'POST'
+        });
+        const response = await counter.fetch(request);
+        expect(await response.json()).to.deep.equal({
+          errors: [
+            {
+              message: 'Problem while calling method',
+              details: 'Mistake'
+            }
+          ]
+        });
+        expect(response.status).to.equal(500);
       });
 
       test('/call throws when calling a property', async () => {
