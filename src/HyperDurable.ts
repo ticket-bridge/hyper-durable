@@ -139,7 +139,7 @@ export class HyperDurable<Env = unknown> implements DurableObject {
 
         try {
           console.log(`calling ${key} with ${args}`);
-          value = hyperProxy[key](...args);
+          value = await hyperProxy[key](...args);
         } catch(e) {
           throw new HyperError('Problem while calling method', {
             details: e.message || '',
@@ -210,13 +210,13 @@ export class HyperDurable<Env = unknown> implements DurableObject {
     }
   }
 
-  async destroy() {
+  async reset() {
     try {
       this.state.dirty.clear();
       this.state.tempKey = '';
       this.storage.deleteAll();
     } catch(e) {
-      throw new HyperError('Something went wrong while destroying object', {
+      throw new HyperError('Something went wrong while resetting object', {
         details: e.message || ''
       });
     }
