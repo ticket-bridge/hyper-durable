@@ -4,6 +4,7 @@ import { HyperError } from './HyperError';
 
 interface HyperState extends DurableObjectState {
   dirty?: Set<string>;
+  persisted?: Set<string>;
   tempKey?: string;
 }
 
@@ -23,6 +24,15 @@ export class HyperDurable<Env = unknown> implements DurableObject {
     this.storage = state.storage;
     this.router = Router();
 
+    // Load persisted properties into memory
+    this.state.blockConcurrencyWhile(async () => {
+      const persisted = await this.storage.get<Set<string>>('persisted');
+      this.state.persisted = persisted || new Set();
+      for (let key of this.state.persisted) {
+        this[key] = await this.storage.get(key);
+      }
+    });
+
     // Traps for getting and setting props
     const handler = {
       get: (target: any, key: string, receiver: any) => {
@@ -39,7 +49,7 @@ export class HyperDurable<Env = unknown> implements DurableObject {
         // Short-circuit if can't access 
         if (!prop) return Reflect.get(target, key, receiver);
 
-        const reservedKeys = new Set(['state', 'storage', 'router']);
+        const reservedKeys = new Set(['env', 'state', 'storage', 'router']);
 
         // Recursively proxy any object-like properties, except reserved keys
         // This enables us to keep track of deeply-nested changes to props
@@ -59,7 +69,7 @@ export class HyperDurable<Env = unknown> implements DurableObject {
       set: (target: any, key: string, value: any) => {
         // console.log(`Setting ${target}.${key} to equal ${value}`);
         
-        // Add key to persist data 
+        // Add key to persist data
         if (target[key] !== value) {
           if (this === target) {
             this.state.dirty.add(key);
@@ -138,7 +148,6 @@ export class HyperDurable<Env = unknown> implements DurableObject {
         let value: any;
 
         try {
-          console.log(`calling ${key} with ${args}`);
           value = await hyperProxy[key](...args);
         } catch(e) {
           throw new HyperError('Problem while calling method', {
@@ -197,11 +206,17 @@ export class HyperDurable<Env = unknown> implements DurableObject {
   // Persist all dirty props
   async persist() {
     try {
+      let newProps = false;
       for (let key of this.state.dirty) {
         const value = this[key].isProxy ? this[key].original : this[key];
         await this.storage.put(key, value);
+        if (!this.state.persisted.has(key)) {
+          this.state.persisted.add(key);
+          newProps = true;
+        }
         this.state.dirty.delete(key);
       }
+      if (newProps) await this.storage.put('persisted', this.state.persisted);
       return true;
     } catch(e) {
       throw new HyperError('Something went wrong while persisting object', {
