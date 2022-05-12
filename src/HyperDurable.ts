@@ -210,13 +210,13 @@ export class HyperDurable<Env = unknown> implements DurableObject {
     }
   }
 
-  async reset() {
+  async destroy() {
     try {
       this.state.dirty.clear();
       this.state.tempKey = '';
       this.storage.deleteAll();
     } catch(e) {
-      throw new HyperError('Something went wrong while resetting object', {
+      throw new HyperError('Something went wrong while destroying object', {
         details: e.message || ''
       });
     }

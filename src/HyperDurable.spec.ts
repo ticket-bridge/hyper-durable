@@ -101,9 +101,9 @@ describe('HyperDurable', () => {
       expect(await counter.storage.get('objectLikeProp')).to.deep.equal(['three']);
     });
 
-    test('removes all persisted data when resetting object', async () => {
+    test('removes all persisted data when destroying object', async () => {
       await counter.persist();
-      await counter.reset();
+      await counter.destroy();
       expect(await counter.storage.list()).to.deep.equal(new Map());
     });
   });
