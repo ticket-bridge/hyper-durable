@@ -35,8 +35,6 @@ export class HyperDurable<Env = unknown> implements DurableObject {
         // Reserved key to get the underlying object
         if (key === 'original') return target;
 
-        // console.log(`Getting ${target}.${typeof key === 'string' ? key : 'unknown'}`);
-
         const prop = target[key];
 
         // Short-circuit if can't access 
@@ -59,9 +57,7 @@ export class HyperDurable<Env = unknown> implements DurableObject {
           ? target[key].bind(receiver)
           : Reflect.get(target, key, receiver);
       },
-      set: (target: any, key: string, value: any) => {
-        // console.log(`Setting ${target}.${key} to equal ${value}`);
-        
+      set: (target: any, key: string, value: any) => {        
         // Add key to persist data
         if (target[key] !== value) {
           if (this === target) {
@@ -215,7 +211,6 @@ export class HyperDurable<Env = unknown> implements DurableObject {
     }
     for (let key of this.state.persisted) {
       this[key] = await this.storage.get(key);
-      console.log('setting key: ', key);
     }
     return true;
   }
