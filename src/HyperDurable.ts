@@ -188,6 +188,9 @@ export class HyperDurable<Env = unknown> implements DurableObject {
         throw new HyperError('Not found', { status: 404 });
       });
 
+    // Initialize the object from storage
+    this.initialize();
+
     return hyperProxy;
   }
 
@@ -197,10 +200,10 @@ export class HyperDurable<Env = unknown> implements DurableObject {
         this.state.initialized = undefined;
         throw new HyperError('Something went wrong while initializing object', {
           details: e.message || ''
-        })
+        });
       });
     }
-    await this.state.initialized
+    await this.state.initialized;
   }
 
   async load() {
@@ -246,9 +249,9 @@ export class HyperDurable<Env = unknown> implements DurableObject {
 
   async destroy() {
     try {
+      await this.storage.deleteAll();
       this.state.dirty.clear();
       this.state.persisted.clear();
-      await this.storage.deleteAll();
     } catch(e) {
       throw new HyperError('Something went wrong while destroying object', {
         details: e.message || ''
