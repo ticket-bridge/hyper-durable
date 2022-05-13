@@ -192,12 +192,6 @@ export class HyperDurable<Env = unknown> implements DurableObject {
   }
 
   async initialize() {
-    if (this.state.persisted.size === 0) {
-      const persisted = await this.storage.get<Set<string>>('persisted');
-      if (persisted) {
-        this.state.persisted = persisted;
-      }
-    }
     if (!this.state.initialized) {
       this.state.initialized = this.load().catch(e => {
         this.state.initialized = undefined;
@@ -210,6 +204,12 @@ export class HyperDurable<Env = unknown> implements DurableObject {
   }
 
   async load() {
+    if (this.state.persisted.size === 0) {
+      const persisted = await this.storage.get<Set<string>>('persisted');
+      if (persisted) {
+        this.state.persisted = persisted;
+      }
+    }
     for (let key of this.state.persisted) {
       this[key] = await this.storage.get(key);
       console.log('setting key: ', key);
