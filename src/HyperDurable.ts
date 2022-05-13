@@ -4,6 +4,7 @@ import { HyperError } from './HyperError';
 
 interface HyperState extends DurableObjectState {
   dirty?: Set<string>;
+  initialized?: Promise<boolean>;
   persisted?: Set<string>;
   tempKey?: string;
 }
@@ -20,18 +21,10 @@ export class HyperDurable<Env = unknown> implements DurableObject {
     this.env = env;
     this.state = state;
     this.state.dirty = new Set();
+    this.state.persisted = new Set();
     this.state.tempKey = '';
     this.storage = state.storage;
     this.router = Router();
-
-    // Load persisted properties into memory
-    this.state.blockConcurrencyWhile(async () => {
-      const persisted = await this.storage.get<Set<string>>('persisted');
-      this.state.persisted = persisted || new Set();
-      for (let key of this.state.persisted) {
-        this[key] = await this.storage.get(key);
-      }
-    });
 
     // Traps for getting and setting props
     const handler = {
@@ -198,6 +191,32 @@ export class HyperDurable<Env = unknown> implements DurableObject {
     return hyperProxy;
   }
 
+  async initialize() {
+    if (this.state.persisted.size === 0) {
+      const persisted = await this.storage.get<Set<string>>('persisted');
+      if (persisted) {
+        this.state.persisted = persisted;
+      }
+    }
+    if (!this.state.initialized) {
+      this.state.initialized = this.load().catch(e => {
+        this.state.initialized = undefined;
+        throw new HyperError('Something went wrong while initializing object', {
+          details: e.message || ''
+        })
+      });
+    }
+    await this.state.initialized
+  }
+
+  async load() {
+    for (let key of this.state.persisted) {
+      this[key] = await this.storage.get(key);
+      console.log('setting key: ', key);
+    }
+    return true;
+  }
+
   // Removes all dirty props from Set (they won't be persisted)
   clear() {
     this.state.dirty.clear();
@@ -229,8 +248,7 @@ export class HyperDurable<Env = unknown> implements DurableObject {
     try {
       this.state.dirty.clear();
       this.state.persisted.clear();
-      this.state.tempKey = '';
-      this.storage.deleteAll();
+      await this.storage.deleteAll();
     } catch(e) {
       throw new HyperError('Something went wrong while destroying object', {
         details: e.message || ''
@@ -239,6 +257,7 @@ export class HyperDurable<Env = unknown> implements DurableObject {
   }
 
   async fetch(request: Request): Promise<Response> {
+    await this.initialize();
     return this.router
       .handle(request)
       .then(async response => {

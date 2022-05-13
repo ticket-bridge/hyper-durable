@@ -99,7 +99,11 @@ describe('HyperDurable', () => {
       storage.put('persisted', new Set(['abc']));
       const state = new DurableObjectState(id, storage);
       counter = new Counter(state, {});
-      expect(await counter.storage.get('abc')).to.equal(5);
+      const request = new Request('https://hd.io/get/abc');
+      const response = await counter.fetch(request);
+      expect(await response.json()).to.deep.equal({
+        value: 5
+      });
     });
 
     test('persists dirty data', async () => {
@@ -107,6 +111,7 @@ describe('HyperDurable', () => {
       counter.objectLikeProp.push('three');
       await counter.persist();
       expect(counter.state.dirty).to.be.empty;
+      expect(await counter.storage.get('persisted')).to.deep.equal(new Set(['counter', 'objectLikeProp']));
       expect(await counter.storage.get('counter')).to.equal(2);
       expect(await counter.storage.get('objectLikeProp')).to.deep.equal(['three']);
     });
@@ -115,6 +120,8 @@ describe('HyperDurable', () => {
       await counter.persist();
       await counter.destroy();
       expect(await counter.storage.list()).to.deep.equal(new Map());
+      expect(counter.state.persisted).to.deep.equal(new Set());
+      expect(counter.state.dirty).to.deep.equal(new Set());
     });
   });
 
