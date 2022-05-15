@@ -106,6 +106,17 @@ describe('HyperDurable', () => {
       });
     });
 
+    // Not sure how to mock errors / test that they're handled properly
+    // test('throws when initialize throws', async () => {
+    //   const id = new DurableObjectId('testName', 'testHexId');
+    //   const storage = new DurableObjectStorage(new MemoryStorage());
+    //   storage.get = async () => { throw new Error };
+    //   const state = new DurableObjectState(id, storage)
+    //   counter = new Counter(state, {});
+    //   expect(async () => await counter.initialize()).to.throw();
+    //   expect(counter.state.initialized).to.equal(false);
+    // });
+
     test('persists dirty data', async () => {
       counter.counter = 2;
       counter.objectLikeProp.push('three');
