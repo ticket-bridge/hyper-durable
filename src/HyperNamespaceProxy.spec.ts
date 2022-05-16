@@ -1,7 +1,13 @@
 import { expect } from 'chai';
 
-import { HyperNamespaceProxy } from './HyperNamespaceProxy';
+import { proxyDurable, proxyHyperDurables } from './HyperNamespaceProxy';
 
-describe('HyperNamespaceProxy', () => {
-  
+describe('proxyDurable', () => {
+  test('returns a DurableObjectNamespace', () => {
+    expect(proxyDurable('TODO').get).to.be.a('function');
+  });
+});
+
+describe('proxyHyperDurables', () => {
+
 });
