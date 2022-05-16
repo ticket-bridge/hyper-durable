@@ -96,10 +96,13 @@ describe('HyperDurable', () => {
     test('initializes with previously persisted properties', async () => {
       const id = new DurableObjectId('testName', 'testHexId');
       const storage = new DurableObjectStorage(new MemoryStorage());
-      storage.put('abc', 5);
-      storage.put('persisted', new Set(['abc']));
       const state = new DurableObjectState(id, storage);
       counter = new Counter(state, {});
+      counter.abc = 5;
+      await counter.persist();
+
+      // Create new Counter instance with same underlying storage
+      counter = new Counter(new DurableObjectState(id, storage), {});
       const request = new Request('https://hd.io/get/abc');
       const response = await counter.fetch(request);
       expect(await response.json()).to.deep.equal({
