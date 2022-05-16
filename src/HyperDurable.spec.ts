@@ -110,7 +110,7 @@ describe('HyperDurable', () => {
       });
     });
 
-    test('throws when initialize throws', async () => {
+    test('initialize throws when storage throws', async () => {
       const id = new DurableObjectId('testName', 'testHexId');
       const storage = new DurableObjectStorage(new MemoryStorage());
       storage.get = async () => { throw new Error };
@@ -123,8 +123,6 @@ describe('HyperDurable', () => {
         expect(e).to.be.instanceOf(HyperError);
         expect(e.message).to.equal('Something went wrong while initializing object');
       }
-
-      counter = undefined;
     });
 
     test('persists dirty data', async () => {
@@ -137,7 +135,20 @@ describe('HyperDurable', () => {
       expect(await counter.storage.get('objectLikeProp')).to.deep.equal(['three']);
     });
 
-    // TODO: Throws when persist throws
+    test('persist throws when storage throws', async () => {
+      const id = new DurableObjectId('testName', 'testHexId');
+      const storage = new DurableObjectStorage(new MemoryStorage());
+      storage.put = async () => { throw new Error };
+      const state = new DurableObjectState(id, storage);
+      counter = new Counter(state, {});
+
+      try {
+        await counter.persist();
+      } catch(e) {
+        expect(e).to.be.instanceOf(HyperError);
+        expect(e.message).to.equal('Something went wrong while persisting object');
+      }
+    });
 
     test('removes all persisted data when destroying object', async () => {
       await counter.persist();
@@ -147,7 +158,20 @@ describe('HyperDurable', () => {
       expect(counter.state.dirty).to.deep.equal(new Set());
     });
 
-    // TODO: Throws when destroy throws
+    test('destroy throws when storage throws', async () => {
+      const id = new DurableObjectId('testName', 'testHexId');
+      const storage = new DurableObjectStorage(new MemoryStorage());
+      storage.deleteAll = async () => { throw new Error };
+      const state = new DurableObjectState(id, storage);
+      counter = new Counter(state, {});
+
+      try {
+        await counter.destroy();
+      } catch(e) {
+        expect(e).to.be.instanceOf(HyperError);
+        expect(e.message).to.equal('Something went wrong while destroying object');
+      }
+    });
   });
 
   describe('fetch', () => {
