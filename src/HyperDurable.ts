@@ -184,9 +184,6 @@ export class HyperDurable<Env = unknown> implements DurableObject {
         throw new HyperError('Not found', { status: 404 });
       });
 
-    // Initialize the object from storage
-    this.initialize();
-
     return hyperProxy;
   }
 

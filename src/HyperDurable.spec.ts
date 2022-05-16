@@ -7,6 +7,7 @@ import {
 import { MemoryStorage } from '@miniflare/storage-memory';
 
 import { HyperDurable } from './HyperDurable';
+import { HyperError } from './HyperError';
 
 describe('HyperDurable', () => {
   // Test class
@@ -106,16 +107,22 @@ describe('HyperDurable', () => {
       });
     });
 
-    // Not sure how to mock errors / test that they're handled properly
-    // test('throws when initialize throws', async () => {
-    //   const id = new DurableObjectId('testName', 'testHexId');
-    //   const storage = new DurableObjectStorage(new MemoryStorage());
-    //   storage.get = async () => { throw new Error };
-    //   const state = new DurableObjectState(id, storage)
-    //   counter = new Counter(state, {});
-    //   expect(async () => await counter.initialize()).to.throw();
-    //   expect(counter.state.initialized).to.equal(false);
-    // });
+    test('throws when initialize throws', async () => {
+      const id = new DurableObjectId('testName', 'testHexId');
+      const storage = new DurableObjectStorage(new MemoryStorage());
+      storage.get = async () => { throw new Error };
+      const state = new DurableObjectState(id, storage);
+      counter = new Counter(state, {});
+
+      try {
+        await counter.initialize();
+      } catch(e) {
+        expect(e).to.be.instanceOf(HyperError);
+        expect(e.message).to.equal('Something went wrong while initializing object');
+      }
+
+      counter = undefined;
+    });
 
     test('persists dirty data', async () => {
       counter.counter = 2;
@@ -127,6 +134,8 @@ describe('HyperDurable', () => {
       expect(await counter.storage.get('objectLikeProp')).to.deep.equal(['three']);
     });
 
+    // TODO: Throws when persist throws
+
     test('removes all persisted data when destroying object', async () => {
       await counter.persist();
       await counter.destroy();
@@ -134,6 +143,8 @@ describe('HyperDurable', () => {
       expect(counter.state.persisted).to.deep.equal(new Set());
       expect(counter.state.dirty).to.deep.equal(new Set());
     });
+
+    // TODO: Throws when destroy throws
   });
 
   describe('fetch', () => {
