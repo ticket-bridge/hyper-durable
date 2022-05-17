@@ -1,0 +1,22 @@
+name = "hyper-durable"
+compatibility_date = "2022-05-17"
+
+account_id = ""
+workers_dev = true
+
+[durable_objects]
+bindings = [
+  { name = "COUNTER", class_name = "Counter" }
+]
+
+[[migrations]]
+tag = "v1"
+new_classes = ["Counter"]
+
+[build]
+command = "npm run build"
+
+[build.upload]
+format = "modules"
+dir = "dist"
+main = "./index.mjs"

@@ -1,7 +1,7 @@
 import { HyperDurable } from './HyperDurable';
-import { proxyHyperDurables } from 'HyperNamespaceProxy';
+import { proxyHyperDurables } from './HyperNamespaceProxy';
 
-module.exports = {
+export default {
   HyperDurable,
   proxyHyperDurables
 };
