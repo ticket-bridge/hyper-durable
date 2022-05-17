@@ -6,14 +6,25 @@ import {
   DurableObjectStorage
 } from '@miniflare/durable-objects';
 import { MemoryStorage } from '@miniflare/storage-memory';
+import { Miniflare } from 'miniflare';
 
 import { HyperNamespaceProxy, proxyHyperDurables } from './HyperNamespaceProxy';
 
 describe('HyperNamespaceProxy', () => {
+  const mf = new Miniflare({
+    modules: true,
+    scriptPath: 'test/Counter.js',
+    durableObjects: {
+      COUNTER: 'Counter'
+    }
+  });
+  const res = await mf.dispatchFetch("http://hd.io/get/counter");
+  console.log(res);
+
   let Counter: HyperNamespaceProxy | undefined;
   let counter: HyperDurableStub | undefined;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     const storage = new DurableObjectStorage(new MemoryStorage());
     const namespace = new DurableObjectNamespace('Counter', async id => new DurableObjectState(id, storage));
     Counter = new HyperNamespaceProxy(namespace);
