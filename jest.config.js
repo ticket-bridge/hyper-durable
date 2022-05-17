@@ -5,5 +5,14 @@ export default {
       useESM: true,
     },
   },
+  verbose: true,
+
+  // Coverage
+  collectCoverage: true,
+  collectCoverageFrom: [
+    "src/**/*.ts",
+  ],
+
+  // Miniflare!
   testEnvironment: "miniflare",
 };

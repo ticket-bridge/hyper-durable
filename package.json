@@ -9,7 +9,7 @@
   "module": "./dist/index.mjs",
   "scripts": {
     "build": "node build.js",
-    "test": "yarn run build && node --experimental-vm-modules node_modules/jest/bin/jest.js --verbose --coverage"
+    "test": "yarn run build && node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "devDependencies": {
     "@babel/core": "^7.17.10",

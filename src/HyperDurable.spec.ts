@@ -6,34 +6,11 @@ import {
 } from '@miniflare/durable-objects';
 import { MemoryStorage } from '@miniflare/storage-memory';
 
-import { HyperDurable } from './HyperDurable';
 import { HyperError } from './HyperError';
 
+import { Counter } from '../test/index';
+
 describe('HyperDurable', () => {
-  // Test class
-  class Counter extends HyperDurable {
-    abc?: number;
-    counter: number;
-    objectLikeProp: string[];
-
-    constructor(state: DurableObjectState, env: unknown) {
-      super(state, env);
-      this.counter = 1;
-      this.objectLikeProp = [];
-    }
-
-    increment() {
-      this.counter++;
-    }
-
-    sayHello(name: string) {
-      return `Hello ${name}!`;
-    }
-
-    throws() {
-      throw new Error('Mistake');
-    }
-  }
   let counter: Counter | undefined;
 
   beforeEach(() => {
