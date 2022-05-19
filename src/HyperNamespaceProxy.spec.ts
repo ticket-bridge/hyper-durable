@@ -50,11 +50,11 @@ describe('HyperNamespaceProxy', () => {
     });
 
     test('proxies fetch for setting properties', async () => {
-      expect(await counter.setCounter(2)).to.deep.equal({
-        value: 2
+      expect(await counter.setCounter(5)).to.deep.equal({
+        value: 5
       });
       expect(await counter.counter).to.deep.equal({
-        value: 2
+        value: 5
       });
     });
 
