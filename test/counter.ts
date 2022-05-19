@@ -1,4 +1,3 @@
-import { DurableObjectState } from '@miniflare/durable-objects';
 import { HyperDurable } from '../src/HyperDurable';
 
 export class Counter extends HyperDurable {

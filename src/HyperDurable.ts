@@ -1,5 +1,4 @@
 import { Router } from 'itty-router';
-import { DurableObjectState, DurableObjectStorage } from '@miniflare/durable-objects';
 import { HyperError } from './HyperError';
 
 interface HyperState extends DurableObjectState {

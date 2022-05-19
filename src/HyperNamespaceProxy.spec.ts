@@ -5,17 +5,17 @@ import { HyperNamespaceProxy, proxyHyperDurables } from './HyperNamespaceProxy';
 import { Counter } from '../test/counter';
 
 describe('HyperNamespaceProxy', () => {
-  let { COUNTER } = getMiniflareBindings();
-  const Counter = new HyperNamespaceProxy<Counter>(COUNTER);
+  const bindings = getMiniflareBindings();
+  const COUNTER = new HyperNamespaceProxy<Counter>(bindings.COUNTER, Counter);
 
-  const id = Counter.newUniqueId();
-  const counter = Counter.get(id);
+  const id = COUNTER.newUniqueId();
+  const counter = COUNTER.get(id);
 
   test('is a DurableObjectNamespace', () => {
-    expect(Counter.get).to.be.a('function');
-    expect(Counter.newUniqueId).to.be.a('function');
-    expect(Counter.idFromName).to.be.a('function');
-    expect(Counter.idFromString).to.be.a('function');
+    expect(COUNTER.get).to.be.a('function');
+    expect(COUNTER.newUniqueId).to.be.a('function');
+    expect(COUNTER.idFromName).to.be.a('function');
+    expect(COUNTER.idFromString).to.be.a('function');
   });
 
   describe('stub', () => {
@@ -52,11 +52,14 @@ describe('HyperNamespaceProxy', () => {
     //   });
     // });
 
-    // test('proxies fetch for other methods', async () => {
-    //   expect(await counter.increment()).to.deep.equal({
-    //     value: 2
-    //   });
-    // });
+    test('proxies fetch for other methods', async () => {
+      expect(await counter.increment()).to.deep.equal({
+        value: null
+      });
+      expect(await counter.counter).to.deep.equal({
+        value: 2
+      });
+    });
   });
 });
 
