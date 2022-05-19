@@ -7,12 +7,12 @@ import { Counter } from '../test/index';
 describe('HyperNamespaceProxy', () => {
   const bindings = getMiniflareBindings();
   const COUNTER = new HyperNamespaceProxy<Counter>(bindings.COUNTER, Counter);
-
   const id = COUNTER.newUniqueId();
-  const counter = COUNTER.get(id);
+  let counter = COUNTER.get(id);
 
   beforeEach(async () => {
-    // await counter.destroy();
+    const id = COUNTER.newUniqueId();
+    counter = COUNTER.get(id);
   });
 
   test('is a DurableObjectNamespace', () => {
