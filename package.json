@@ -15,6 +15,7 @@
     "@babel/core": "^7.17.10",
     "@babel/preset-env": "^7.17.10",
     "@babel/preset-typescript": "^7.16.7",
+    "@cloudflare/workers-types": "3.4.0",
     "@miniflare/durable-objects": "^2.4.0",
     "@miniflare/storage-memory": "^2.4.0",
     "@types/chai": "^4.3.1",
@@ -30,7 +31,6 @@
     "wrangler": "^2.0.5"
   },
   "dependencies": {
-    "@cloudflare/workers-types": "^3.9.0",
     "itty-router": "^2.6.1"
   }
 }

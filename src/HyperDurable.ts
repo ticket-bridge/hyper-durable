@@ -248,7 +248,6 @@ export class HyperDurable<Env = unknown> implements DurableObject {
         delete this[key];
         this.state.persisted.delete(key);
       }
-      this.constructor();
     } catch(e) {
       throw new HyperError('Something went wrong while destroying object', {
         details: e.message || ''
