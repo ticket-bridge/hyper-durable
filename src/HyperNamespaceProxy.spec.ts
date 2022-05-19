@@ -70,8 +70,11 @@ describe('HyperNamespaceProxy', () => {
 });
 
 describe('proxyHyperDurables', () => {
+  const bindings = getMiniflareBindings();
+
   test('proxies only durable object namespaces', () => {
-    // TODO: Add tests
-    expect(proxyHyperDurables());
+    const { COUNTER } = proxyHyperDurables(bindings, { COUNTER: Counter });
+    const id = COUNTER.newUniqueId();
+    expect(COUNTER.get(id)).to.be.instanceOf(HyperStub);
   });
 });

@@ -1,4 +1,6 @@
-export class HyperNamespaceProxy<T> implements DurableObjectNamespace {
+import { HyperDurable } from "./HyperDurable";
+
+export class HyperNamespaceProxy<T extends HyperDurable> implements DurableObjectNamespace {
   namespace: DurableObjectNamespace;
   ref: T;
 
@@ -101,6 +103,15 @@ export class HyperNamespaceProxy<T> implements DurableObjectNamespace {
   }
 }
 
-export const proxyHyperDurables = () => {
-  return true;
+export const proxyHyperDurables = <ENV>(
+  env: ENV,
+  doBindings: { [key: string]: any extends HyperDurable ? any : never }
+) => {
+  for (const [key, value] of Object.entries(env)) {
+    if (key in doBindings) {
+      const doClass = doBindings[key];
+      env[key] = new HyperNamespaceProxy<typeof doClass>(value, doClass);
+    }
+  }
+  return env;
 }

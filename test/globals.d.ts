@@ -1,5 +1,8 @@
 declare global {
-  function getMiniflareBindings(): { COUNTER: DurableObjectNamespace };
+  interface Env {
+    COUNTER: DurableObjectNamespace
+  }
+  function getMiniflareBindings(): Env;
   function getMiniflareDurableObjectStorage(
     id: DurableObjectId
   ): Promise<DurableObjectStorage>;
