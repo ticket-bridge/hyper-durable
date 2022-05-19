@@ -2,9 +2,11 @@ import { expect } from 'chai';
 
 import { HyperNamespaceProxy, proxyHyperDurables } from './HyperNamespaceProxy';
 
+import { Counter } from '../test/counter';
+
 describe('HyperNamespaceProxy', () => {
   let { COUNTER } = getMiniflareBindings();
-  const Counter = new HyperNamespaceProxy(COUNTER);
+  const Counter = new HyperNamespaceProxy<Counter>(COUNTER);
 
   const id = Counter.newUniqueId();
   const counter = Counter.get(id);
@@ -25,30 +27,36 @@ describe('HyperNamespaceProxy', () => {
       });
     });
 
-    // These tests spin forever - have to implement stub
-  //   test('throws when get throws', async () => {
-  //     expect(await counter.xyz).to.deep.equal({
-  //       errors: [
-  //         {
-  //           message: 'Property xyz does not exist',
-  //           details: ''
-  //         }
-  //       ]
-  //     });
-  //   });
+    test('proxies fetch for getting properties', async () => {
+      expect(await counter.counter).to.deep.equal({
+        value: 1
+      });
+    });
 
-  //   test('proxies fetch for getting properties', async () => {
-  //     expect(await counter.counter).to.equal(1);
-  //   });
+    test('throws when get throws', async () => {
+      // @ts-expect-error
+      expect(await counter.xyz).to.deep.equal({
+        errors: [
+          {
+            message: 'Property xyz does not exist',
+            details: ''
+          }
+        ]
+      });
+    });
 
-  //   test('proxies fetch for setting properties', async () => {
-  //     counter.counter = 2;
-  //     expect(await counter.counter).to.equal(2);
-  //   });
+    // test('proxies fetch for setting properties', async () => {
+    //   counter.counter = 2;
+    //   expect(await counter.counter).to.deep.equal({
+    //     value: 2
+    //   });
+    // });
 
-  //   test('proxies fetch for other methods', async () => {
-  //     expect(await counter.increment()).to.equal(2);
-  //   });
+    // test('proxies fetch for other methods', async () => {
+    //   expect(await counter.increment()).to.deep.equal({
+    //     value: 2
+    //   });
+    // });
   });
 });
 
