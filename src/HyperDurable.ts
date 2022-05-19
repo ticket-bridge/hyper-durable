@@ -2,10 +2,10 @@ import { Router } from 'itty-router';
 import { HyperError } from './HyperError';
 
 interface HyperState extends DurableObjectState {
-  dirty?: Set<string>;
+  dirty: Set<string>;
   initialized?: Promise<boolean>;
-  persisted?: Set<string>;
-  tempKey?: string;
+  persisted: Set<string>;
+  tempKey: string;
 }
 
 export class HyperDurable<Env = unknown> implements DurableObject {
@@ -18,10 +18,12 @@ export class HyperDurable<Env = unknown> implements DurableObject {
 
   constructor(state: DurableObjectState, env: Env) {
     this.env = env;
-    this.state = state;
-    this.state.dirty = new Set();
-    this.state.persisted = new Set();
-    this.state.tempKey = '';
+    this.state = {
+      ...state,
+      dirty: new Set(),
+      persisted: new Set(),
+      tempKey: ''
+    };
     this.storage = state.storage;
     this.router = Router();
 
