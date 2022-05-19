@@ -11,6 +11,10 @@ describe('HyperNamespaceProxy', () => {
   const id = COUNTER.newUniqueId();
   const counter = COUNTER.get(id);
 
+  beforeEach(async () => {
+    // await counter.destroy();
+  });
+
   test('is a DurableObjectNamespace', () => {
     expect(COUNTER.get).to.be.a('function');
     expect(COUNTER.newUniqueId).to.be.a('function');
@@ -45,12 +49,14 @@ describe('HyperNamespaceProxy', () => {
       });
     });
 
-    // test('proxies fetch for setting properties', async () => {
-    //   counter.counter = 2;
-    //   expect(await counter.counter).to.deep.equal({
-    //     value: 2
-    //   });
-    // });
+    test('proxies fetch for setting properties', async () => {
+      expect(await counter.setCounter(2)).to.deep.equal({
+        value: 2
+      });
+      expect(await counter.counter).to.deep.equal({
+        value: 2
+      });
+    });
 
     test('proxies fetch for other methods', async () => {
       expect(await counter.increment()).to.deep.equal({

@@ -35,18 +35,23 @@ export class HyperNamespaceProxy<T> implements DurableObjectNamespace {
   }
 
   get(id: DurableObjectId) {
-    // All of our props & methods return Promises that resolve to Responses, since everything
-    // uses the fetch interface.
-    type PromisedStub = {
+    // All of our prop getters & methods return Promises, since everything uses the
+    // fetch interface.
+    type PromisedGetStub = {
       [Prop in keyof T]?:
         T[Prop] extends Function ?
-        () => Promise<Response> :
-        Promise<Response>;
+        () => Promise<unknown> :
+        Promise<unknown>;
     };
-    type HyperStub = DurableObjectStub & PromisedStub;
+    // All of our props have setters formatted as: setProperty()
+    type SetStub = {
+      [Prop in keyof T as T[Prop] extends Function ? never : `set${Capitalize<string & Prop>}`]?:
+        (newValue: T[Prop]) => Promise<unknown>
+    }
+    type HyperStub = DurableObjectStub & PromisedGetStub & SetStub;
 
     const stub = this.namespace.get(id);
-    const hyperStub: HyperStub = Object.assign<DurableObjectStub, PromisedStub>(stub, {});
+    const hyperStub: HyperStub = Object.assign<DurableObjectStub, object>(stub, {});
 
     function createHyperRequest(action: string, key: string, payload?: object) {
       return new Request(`https://hd.io/${action}/${key}`, {
@@ -76,12 +81,18 @@ export class HyperNamespaceProxy<T> implements DurableObjectNamespace {
           }
         }
 
-        // Properties
+        // Property Setter
+        if (key.startsWith('set')) {
+          // Anonymous function to pass args
+          return function (value: unknown) {
+            const realKey = key[3].toLowerCase() + key.slice(4);
+            const request = createHyperRequest('set', realKey, { value });
+            return sendHyperRequest(hyperStub, request);
+          }
+        }
+
+        // Property Getter
         const request = createHyperRequest('get', key);
-        return sendHyperRequest(hyperStub, request);
-      },
-      set: (_target: object, key: string, value: any): any => {
-        const request = createHyperRequest('set', key, { value });
         return sendHyperRequest(hyperStub, request);
       }
     }
