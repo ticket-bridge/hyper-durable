@@ -2,7 +2,7 @@ import { expect } from 'chai';
 
 import { HyperNamespaceProxy, proxyHyperDurables } from './HyperNamespaceProxy';
 
-import { Counter } from '../test/counter';
+import { Counter } from '../test/index';
 
 describe('HyperNamespaceProxy', () => {
   const bindings = getMiniflareBindings();
