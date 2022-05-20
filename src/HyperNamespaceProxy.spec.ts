@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 
+import { HyperError } from './HyperError';
 import { HyperNamespaceProxy, proxyHyperDurables } from './HyperNamespaceProxy';
 
 import { Counter } from '../test/index';
@@ -72,9 +73,23 @@ describe('HyperNamespaceProxy', () => {
 describe('proxyHyperDurables', () => {
   const bindings = getMiniflareBindings();
 
-  test('proxies only durable object namespaces', () => {
+  test('returns unchanged bindings when passed no durable object bindings', () => {
+    const newBindings = proxyHyperDurables(bindings, {});
+    expect(newBindings).to.deep.equal(bindings);
+  });
+
+  test('proxies durable object bindings', () => {
     const { COUNTER } = proxyHyperDurables(bindings, { COUNTER: Counter });
     const id = COUNTER.newUniqueId();
-    // expect(COUNTER.get(id)).to.be.instanceOf(HyperStub);
+    expect(COUNTER.get(id).setCounter).to.be.a('function');
+  });
+
+  test('throws when passed a non-durable object binding', () => {
+    try {
+      proxyHyperDurables(bindings, { COUNTER: class Fake {} })
+    } catch(e) {
+      expect(e).to.be.instanceOf(HyperError);
+      expect(e.message).to.equal('Class "Fake" does not extend HyperDurable');
+    }
   });
 });

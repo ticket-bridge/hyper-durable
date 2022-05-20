@@ -105,7 +105,7 @@ export class HyperNamespaceProxy<T extends HyperDurable> implements DurableObjec
 
 export const proxyHyperDurables = <ENV>(
   env: ENV,
-  doBindings: { [key: string]: any extends HyperDurable ? any : never }
+  doBindings: { [key: string]: HyperDurable }
 ) => {
   for (const [key, value] of Object.entries(env)) {
     if (key in doBindings) {
