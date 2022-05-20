@@ -11,13 +11,14 @@ import { HyperError } from './HyperError';
 import { Counter } from '../test/index';
 
 describe('HyperDurable', () => {
+  const bindings = getMiniflareBindings();
   let counter: Counter | undefined;
 
   beforeEach(() => {
     const id = new DurableObjectId('testName', 'testHexId');
     const storage = new DurableObjectStorage(new MemoryStorage());
     const state = new DurableObjectState(id, storage);
-    counter = new Counter(state, {});
+    counter = new Counter(state, bindings);
   });
 
   describe('this proxy', () => {
@@ -74,12 +75,12 @@ describe('HyperDurable', () => {
       const id = new DurableObjectId('testName', 'testHexId');
       const storage = new DurableObjectStorage(new MemoryStorage());
       const state = new DurableObjectState(id, storage);
-      counter = new Counter(state, {});
+      counter = new Counter(state, bindings);
       counter.abc = 5;
       await counter.persist();
 
       // Create new Counter instance with same underlying storage
-      counter = new Counter(new DurableObjectState(id, storage), {});
+      counter = new Counter(new DurableObjectState(id, storage), bindings);
       const request = new Request('https://hd.io/get/abc');
       const response = await counter.fetch(request);
       expect(await response.json()).to.deep.equal({
@@ -92,7 +93,7 @@ describe('HyperDurable', () => {
       const storage = new DurableObjectStorage(new MemoryStorage());
       storage.get = async () => { throw new Error };
       const state = new DurableObjectState(id, storage);
-      counter = new Counter(state, {});
+      counter = new Counter(state, bindings);
 
       try {
         await counter.initialize();
@@ -117,7 +118,7 @@ describe('HyperDurable', () => {
       const storage = new DurableObjectStorage(new MemoryStorage());
       storage.put = async () => { throw new Error };
       const state = new DurableObjectState(id, storage);
-      counter = new Counter(state, {});
+      counter = new Counter(state, bindings);
 
       try {
         await counter.persist();
@@ -140,7 +141,7 @@ describe('HyperDurable', () => {
       const storage = new DurableObjectStorage(new MemoryStorage());
       storage.deleteAll = async () => { throw new Error };
       const state = new DurableObjectState(id, storage);
-      counter = new Counter(state, {});
+      counter = new Counter(state, bindings);
 
       try {
         await counter.destroy();
