@@ -7,7 +7,7 @@ import { Counter } from '../test/index';
 
 describe('HyperNamespaceProxy', () => {
   const bindings = getMiniflareBindings();
-  const COUNTER = new HyperNamespaceProxy<Counter>(bindings.COUNTER, Counter);
+  const COUNTER = new HyperNamespaceProxy(bindings.COUNTER, Counter);
   const id = COUNTER.newUniqueId();
   let counter = COUNTER.get(id);
 
@@ -81,11 +81,13 @@ describe('proxyHyperDurables', () => {
   test('proxies durable object bindings', () => {
     const { COUNTER } = proxyHyperDurables(bindings, { COUNTER: Counter });
     const id = COUNTER.newUniqueId();
-    expect(COUNTER.get(id).setCounter).to.be.a('function');
+    const counter = COUNTER.get(id);
+    expect(counter.setCounter).to.be.a('function');
   });
 
   test('throws when passed a non-durable object binding', () => {
     try {
+      // @ts-expect-error
       proxyHyperDurables(bindings, { COUNTER: class Fake {} })
     } catch(e) {
       expect(e).to.be.instanceOf(HyperError);

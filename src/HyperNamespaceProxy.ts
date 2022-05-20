@@ -1,6 +1,7 @@
-import { HyperDurable } from "./HyperDurable";
+import { HyperDurable } from './HyperDurable';
+import { HyperError } from './HyperError';
 
-export class HyperNamespaceProxy<T extends HyperDurable> implements DurableObjectNamespace {
+export class HyperNamespaceProxy<T extends HyperDurable<ENV>, ENV> implements DurableObjectNamespace {
   namespace: DurableObjectNamespace;
   ref: T;
 
@@ -10,7 +11,7 @@ export class HyperNamespaceProxy<T extends HyperDurable> implements DurableObjec
 
   constructor(
     namespace: DurableObjectNamespace,
-    ref: new (state: DurableObjectState, env: unknown) => T
+    ref: new (state: DurableObjectState, env: ENV) => T
   ) {
     this.namespace = namespace;
     // Create a reference of the DO to check for methods / properties
@@ -41,9 +42,9 @@ export class HyperNamespaceProxy<T extends HyperDurable> implements DurableObjec
     // fetch interface.
     type PromisedGetStub = {
       [Prop in keyof T]?:
-        T[Prop] extends Function ?
-        () => Promise<unknown> :
-        Promise<unknown>;
+        T[Prop] extends Function
+        ? () => Promise<unknown>
+        : Promise<unknown>;
     };
     // All of our props have setters formatted as: setProperty()
     type SetStub = {
@@ -103,15 +104,25 @@ export class HyperNamespaceProxy<T extends HyperDurable> implements DurableObjec
   }
 }
 
-export const proxyHyperDurables = <ENV>(
+export const proxyHyperDurables = <DO extends HyperDurable<ENV>, ENV>(
   env: ENV,
-  doBindings: { [key: string]: HyperDurable }
+  doBindings: { [key: string]: new (state: DurableObjectState, env: ENV) => DO }
 ) => {
-  for (const [key, value] of Object.entries(env)) {
-    if (key in doBindings) {
-      const doClass = doBindings[key];
-      env[key] = new HyperNamespaceProxy<typeof doClass>(value, doClass);
+  const newEnv: {
+    [Prop in keyof ENV]?:
+      ENV[Prop] extends DurableObjectNamespace
+      // TODO: Only change type for those in doBindings
+      ? HyperNamespaceProxy<DO, ENV>
+      : ENV[Prop];
+  } = {};
+  for (const [key, value] of Object.entries(doBindings)) {
+    if (!(value.prototype instanceof HyperDurable)) {
+      throw new HyperError(`Class "${value.name}" does not extend HyperDurable`);
     }
+    newEnv[key] = new HyperNamespaceProxy(env[key], value);
   }
-  return env;
+  for (const [key, value] of Object.entries(env)) {
+    if (!newEnv[key]) newEnv[key] = value;
+  }
+  return newEnv;
 }
