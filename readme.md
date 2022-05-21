@@ -4,9 +4,7 @@ HyperDurable is a base class for Durable Objects to enable natural, object-like 
 
 ## Usage
 
-**NOTE: This is currently aspirational**
-
-Write your durable object class by extending the `HyperDurable` base class.  In the constructor, pass the `state` and `env` to `HyperDurable` via `super()`.  `HyperDurable` will load all previously persisted data into memory inside its constructor, so any properties you set *after* calling `super()` will override any data in memory.
+Write your durable object class by extending the `HyperDurable` base class.  In the constructor, pass the `state` and `env` to `HyperDurable` via `super()`.  `HyperDurable` will load all previously persisted data into memory inside its *fetch*, so any properties you set *after* calling `super()` will be overriden by previously persisted data (if data was persisted).
 
 ```javascript
 import { HyperDurable } from 'hyper-durable';
@@ -16,11 +14,7 @@ export class Ticket extends HyperDurable {
     // Pass state and env to HyperDurable
     super(state, env);
 
-    // If there is no persisted data, this will be true
-    if (this.state.isEmptyObject) this.setup();
-  }
-
-  setup() {
+    // Anything set here will be overriden by initialization
     this.txHashes = [];
   }
 
