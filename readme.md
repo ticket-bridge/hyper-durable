@@ -4,23 +4,29 @@ HyperDurable is a base class for Durable Objects to enable natural, object-like 
 
 ## Usage
 
-Write your durable object class by extending the `HyperDurable` base class.  In the constructor, pass the `state` and `env` to `HyperDurable` via `super()`.  `HyperDurable` will load all previously persisted data into memory inside its *fetch*, so any properties you set *after* calling `super()` will be overriden by previously persisted data (if data was persisted).
+Write your durable object class by extending the `HyperDurable` base class.  In the constructor, pass the `state` and `env` to `HyperDurable` via `super()`.  `HyperDurable` will load all previously persisted data into memory inside its *fetch*, so any properties you set *after* calling `super()` will be overriden by any previously persisted data.
 
 ```javascript
 import { HyperDurable } from 'hyper-durable';
 
-export class Ticket extends HyperDurable {
+export class RubberDuck extends HyperDurable {
   constructor(state, env) {
     // Pass state and env to HyperDurable
     super(state, env);
 
-    // Anything set here will be overriden by initialization
-    this.txHashes = [];
+    // Anything set here will be overriden by previously persisted data, if any exists
+    // Therefore, you can safely set default values here
+    this.name = 'New Duck';
+    this.nicknames = [];
   }
 
-  registerTx(txHash, ownedByUserId) {
-    this.txHashes.push(txHash);
-    this.ownedByUserId = ownedByUserId;
+  giveNickname(nickname) {
+    this.nicknames.push(nickname);
+  }
+
+  sayHello() {
+    return `Hello world, my name is ${this.name}`
+      + (this.nicknames.length > 0 ? `, but you can call me ${this.nicknames[0]}` : '');
   }
 }
 ```
