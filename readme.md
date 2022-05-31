@@ -4,7 +4,7 @@ HyperDurable is a base class for Durable Objects to enable natural, object-like 
 
 ## Usage
 
-Write your durable object class by extending the `HyperDurable` base class.  In the constructor, pass the `state` and `env` to `HyperDurable` via `super()`.  `HyperDurable` will load all previously persisted data into memory inside its *fetch*, so any properties you set *after* calling `super()` will be overriden by any previously persisted data.
+Write your durable object class by extending the `HyperDurable` base class.  In the constructor, pass the `state` and `env` to `HyperDurable` via `super()`.  `HyperDurable` will load all previously persisted data into memory inside its *fetch*, so any properties you set in the constructor after calling `super()` will be overriden by any previously persisted data.
 
 ```javascript
 import { HyperDurable } from 'hyper-durable';
