@@ -154,7 +154,7 @@ describe('HyperDurable', () => {
 
   describe('fetch', () => {
     describe('/get', () => {
-      test('/get returns value from memory', async () => {
+      test('returns value from memory', async () => {
         const request = new Request('https://hd.io/get/counter');
         const response = await counter.fetch(request);
         expect(await response.json()).to.deep.equal({
@@ -163,7 +163,7 @@ describe('HyperDurable', () => {
         expect(response.status).to.equal(200);
       });
 
-      test('/get throws when requesting a nonexistent key', async () => {
+      test('throws when requesting a nonexistent key', async () => {
         const request = new Request('https://hd.io/get/xyz');
         const response = await counter.fetch(request);
         expect(await response.json()).to.deep.equal({
@@ -177,7 +177,7 @@ describe('HyperDurable', () => {
         expect(response.status).to.equal(404);
       });
 
-      test('/get throws when attempting to access a method', async () => {
+      test('throws when attempting to access a method', async () => {
         const request = new Request('https://hd.io/get/increment');
         const response = await counter.fetch(request);
         expect(await response.json()).to.deep.equal({
@@ -191,7 +191,7 @@ describe('HyperDurable', () => {
         expect(response.status).to.equal(400);
       });
 
-      test('/get throws with non-GET method', async () => {
+      test('throws with non-GET method', async () => {
         const request = new Request('https://hd.io/get/counter', {
           body: JSON.stringify({}),
           method: 'POST'
@@ -209,7 +209,7 @@ describe('HyperDurable', () => {
         expect(response.status).to.equal(405);
       });
 
-      test('/get throws with a malformed path', async () => {
+      test('throws with a malformed path', async () => {
         const request = new Request('https://hd.io/get/counter/hello');
         const response = await counter.fetch(request);
         expect(await response.json()).to.deep.equal({
@@ -225,7 +225,7 @@ describe('HyperDurable', () => {
     });
     
     describe('/set', () => {
-      test('/set changes value in memory, persists data, and returns value', async () => {
+      test('changes value in memory, persists data, and returns value', async () => {
         const request = new Request('https://hd.io/set/counter', {
           body: JSON.stringify({
             value: 5
@@ -241,7 +241,7 @@ describe('HyperDurable', () => {
         expect(await counter.storage.get('counter')).to.equal(5);
       });
 
-      test('/set adds new properties in memory, persists data, and returns value', async () => {
+      test('adds new properties in memory, persists data, and returns value', async () => {
         const request = new Request('https://hd.io/set/abc', {
           body: JSON.stringify({
             value: 99
@@ -257,7 +257,7 @@ describe('HyperDurable', () => {
         expect(await counter.storage.get('abc')).to.equal(99);
       });
 
-      test('/set throws when attempting to access a method', async () => {
+      test('throws when attempting to access a method', async () => {
         const request = new Request('https://hd.io/set/increment', {
           body: JSON.stringify({
             value: 99
@@ -276,7 +276,7 @@ describe('HyperDurable', () => {
         expect(response.status).to.equal(404);
       });
 
-      test('/set throws with non-POST method', async () => {
+      test('throws with non-POST method', async () => {
         const request = new Request('https://hd.io/set/counter');
         const response = await counter.fetch(request);
         expect(await response.json()).to.deep.equal({
@@ -291,7 +291,7 @@ describe('HyperDurable', () => {
         expect(response.status).to.equal(405);
       });
 
-      test('/set throws with a malformed path', async () => {
+      test('throws with a malformed path', async () => {
         const request = new Request('https://hd.io/set/counter/hello', {
           body: JSON.stringify({
             value: 5
@@ -310,7 +310,7 @@ describe('HyperDurable', () => {
         expect(response.status).to.equal(404);
       });
 
-      test('/set throws with no posted value', async () => {
+      test('throws with no posted value', async () => {
         const request = new Request('https://hd.io/set/counter', {
           body: JSON.stringify({}),
           method: 'POST'
@@ -329,7 +329,7 @@ describe('HyperDurable', () => {
     });
     
     describe('/call', () => {
-      test('/call calls method with no parameters and returns result', async () => {
+      test('calls method with no parameters and returns result', async () => {
         const request = new Request('https://hd.io/call/increment', {
           body: JSON.stringify({
             args: []
@@ -344,7 +344,7 @@ describe('HyperDurable', () => {
         expect(counter.counter).to.equal(2);
       });
 
-      test('/call calls method with arguments from body and returns result', async () => {
+      test('calls method with arguments from body and returns result', async () => {
         const request = new Request('https://hd.io/call/sayHello', {
           body: JSON.stringify({
             args: ['HyperDurable']
@@ -358,7 +358,7 @@ describe('HyperDurable', () => {
         expect(response.status).to.equal(200);
       });
 
-      test('/call bubbles up errors from method', async () => {
+      test('bubbles up errors from method', async () => {
         const request = new Request('https://hd.io/call/throws', {
           body: JSON.stringify({
             args: []
@@ -377,7 +377,7 @@ describe('HyperDurable', () => {
         expect(response.status).to.equal(500);
       });
 
-      test('/call throws when calling a property', async () => {
+      test('throws when calling a property', async () => {
         const request = new Request('https://hd.io/call/counter', {
           body: JSON.stringify({
             args: []
@@ -396,7 +396,7 @@ describe('HyperDurable', () => {
         expect(response.status).to.equal(404);
       });
 
-      test('/call throws when calling a method with incorrectly constructed arguments', async () => {
+      test('throws when calling a method with incorrectly constructed arguments', async () => {
         const request = new Request('https://hd.io/call/sayHello', {
           body: JSON.stringify({
             args: { 0: 'wrongArg' }
@@ -415,7 +415,7 @@ describe('HyperDurable', () => {
         expect(response.status).to.equal(400);
       });
 
-      test('/call throws with non-POST method', async () => {
+      test('throws with non-POST method', async () => {
         const request = new Request('https://hd.io/call/increment');
         const response = await counter.fetch(request);
         expect(await response.json()).to.deep.equal({
@@ -430,7 +430,7 @@ describe('HyperDurable', () => {
         expect(response.status).to.equal(405);
       });
 
-      test('/call throws with a malformed path', async () => {
+      test('throws with a malformed path', async () => {
         const request = new Request('https://hd.io/call/counter/hello', {
           body: JSON.stringify({
             args: [5]
