@@ -255,9 +255,7 @@ export class HyperDurable<Env = unknown> implements DurableObject {
     return this.router
       .handle(request)
       .then(async response => {
-        if (this.state.dirty.size > 0) {
-          await this.persist();
-        }
+        if (this.state.dirty.size > 0) await this.persist();
         return response;
       })
       .catch(e => {
