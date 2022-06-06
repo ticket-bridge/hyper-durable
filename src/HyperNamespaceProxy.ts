@@ -68,7 +68,12 @@ export class HyperNamespaceProxy<T extends HyperDurable<ENV>, ENV> implements Du
 
     async function sendHyperRequest(durable: DurableObjectStub, request: Request) {
       const promise = durable.fetch(request);
-      return promise.then(res => res.json());
+      return promise.then(async res => {
+        return await res.json();
+      }).then((res: { value?: unknown, errors?: unknown }) => {
+        if (res.hasOwnProperty('value')) return res.value;
+        return res;
+      });
     }
 
     const handler = {
