@@ -213,11 +213,6 @@ export class HyperDurable<Env = unknown> implements DurableObject {
     return true;
   }
 
-  // Removes all dirty props from Set (they won't be persisted)
-  clear() {
-    this.state.dirty.clear();
-  }
-
   // Persist all dirty props
   async persist() {
     try {

@@ -42,7 +42,7 @@ describe('HyperDurable', () => {
     test('tracks dirty props in state when setting properties to new values', () => {
       // In the test class, the state starts dirty because properties are set in the constructor
       // Clear the record of dirty props from state
-      counter.clear();
+      counter.state.dirty.clear();
 
       // Identical values don't need to be persisted
       counter.counter = 1;
@@ -52,14 +52,14 @@ describe('HyperDurable', () => {
     });
 
     test('binds methods to itself', () => {
-      counter.clear();
+      counter.state.dirty.clear();
       counter.increment();
       expect(counter.counter).to.equal(2);
       expect(counter.state.dirty).to.have.all.keys('counter');
     });
 
     test('tracks object-like dirty props', () => {
-      counter.clear();
+      counter.state.dirty.clear();
       counter.objectLikeProp.push('test');
       expect(counter.objectLikeProp).to.deep.equal(['test']);
       expect(counter.state.dirty).to.have.all.keys('objectLikeProp');
