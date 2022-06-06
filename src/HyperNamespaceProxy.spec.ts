@@ -73,9 +73,9 @@ describe('HyperNamespaceProxy', () => {
 describe('proxyHyperDurables', () => {
   const bindings = getMiniflareBindings();
 
-  test('returns unchanged bindings when passed no durable object bindings', () => {
+  test('returns empty object when passed no durable object bindings', () => {
     const newBindings = proxyHyperDurables(bindings, {});
-    expect(newBindings).to.deep.equal(bindings);
+    expect(newBindings).to.deep.equal({});
   });
 
   test('proxies durable object bindings', () => {
