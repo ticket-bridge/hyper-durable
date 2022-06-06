@@ -3,7 +3,7 @@ import { HyperError } from './HyperError';
 
 interface HyperState extends DurableObjectState {
   dirty: Set<string>;
-  initialized?: Promise<boolean>;
+  initialized?: Promise<void>;
   persisted: Set<string>;
   tempKey: string;
 }
@@ -210,7 +210,6 @@ export class HyperDurable<Env = unknown> implements DurableObject {
     for (let key of this.state.persisted) {
       this[key] = await this.storage.get(key);
     }
-    return true;
   }
 
   // Persist all dirty props
@@ -227,7 +226,6 @@ export class HyperDurable<Env = unknown> implements DurableObject {
         this.state.dirty.delete(key);
       }
       if (newProps) await this.storage.put('persisted', this.state.persisted);
-      return true;
     } catch(e) {
       throw new HyperError('Something went wrong while persisting object', {
         details: e.message || ''
