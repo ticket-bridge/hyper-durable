@@ -19,9 +19,7 @@ jobs:
           cache: 'yarn'
       - name: Install dependencies
         run: yarn --frozen-lockfile
-      - name: Build module
-        run: yarn run build
-      - name: Publish
-        run: npm publish --access public
+      - run: yarn run build
+      - run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
