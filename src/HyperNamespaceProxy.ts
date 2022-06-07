@@ -70,9 +70,15 @@ export class HyperNamespaceProxy<T extends HyperDurable<ENV>, ENV> implements Du
       const promise = durable.fetch(request);
       return promise.then(async res => {
         return await res.json();
-      }).then((res: { value?: unknown, errors?: unknown }) => {
+      }).then((res: { value?: unknown, errors?: { message: string, details: string }[] }) => {
         if (res.hasOwnProperty('value')) return res.value;
-        return res;
+        if (res.hasOwnProperty('errors')) {
+          for (const error of res.errors) {
+            throw new HyperError(error.message, {
+              details: error.details
+            });
+          }
+        }
       });
     }
 

@@ -37,15 +37,13 @@ describe('HyperNamespaceProxy', () => {
     });
 
     test('throws when get throws', async () => {
-      // @ts-expect-error
-      expect(await counter.xyz).to.deep.equal({
-        errors: [
-          {
-            message: 'Property xyz does not exist',
-            details: ''
-          }
-        ]
-      });
+      try {
+        // @ts-expect-error
+        await counter.xyz;
+      } catch(e) {
+        expect(e).to.be.instanceOf(HyperError);
+        expect(e.message).to.equal('Property xyz does not exist');
+      }
     });
 
     test('proxies fetch for setting properties', async () => {

@@ -131,7 +131,7 @@ Deletes all data in `storage`, clears `state.dirty` and `state.persisted`, and d
 
 Initializes the object (if not previously initialized), then passes the request to `router`.  After `router` handles the request, persists and dirty data.
 
-### `proxyHyperDurables(env: Env, doBindings: { [key: string]: doClass })`
+### `proxyHyperDurables(env: Env, doBindings: { [key: string]: DOClass })`
 
 Use to proxy your durable object namespaces.  Accepts two parameters: `env` and `doBindings`.  `env` is the `env` of your worker where namespaces are accessed.  `doBindings` is an object, where the keys are *binding names* and the values are the *durable object classes* associated with those binding.  Returns an object, where the keys are the passed *binding names* and the values are the associated *HyperNamespaceProxy*.
 
@@ -161,16 +161,12 @@ To invoke a method, `await` it (if a method has no return value, it will return 
 await stub.sayHello();
 ```
 
-Stub properties and methods will return their value directly in the event of a success.  If the operation fails, they will instead return an object with the following structure:
+Stub properties and methods will return their value directly in the event of a success.  If the operation fails, a `HyperError` will be thrown with the following structure:
 
 ```javascript
 {
-  errors: [
-    {
-      message: 'Error message',
-      details: 'Error details'
-    }
-  ]
+  message: 'Error message',
+  details: 'Error details'
 }
 ```
 
