@@ -61,6 +61,9 @@ Every stub operation must be `await`ed, since they all use the `fetch` API under
 import { proxyHyperDurables } from 'hyper-durable';
 import { RubberDuck } from './RubberDuck';
 
+// Export the DO class
+export { RubberDuck };
+
 export default {
   async fetch(request, env) {
     // Proxy the namespace
