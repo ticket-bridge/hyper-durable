@@ -172,7 +172,7 @@ To set a property, `await` the auto-generated setter (returns the new value):
 await stub.setName('Eendje');
 ```
 
-To invoke a method, `await` it (if a method has no return value, it will return `null`):
+To invoke a method, `await` it (**NOTE:** If a method has no return value, it will return `null` instead of the usual `undefined`):
 
 ```javascript
 await stub.sayHello();
