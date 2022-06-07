@@ -1,3 +1,6 @@
+# CI/CD
+.github/
+
 # System
 .DS_Store
 
