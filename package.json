@@ -1,8 +1,11 @@
 {
-  "name": "hyper-durable",
+  "name": "@ticketbridge/hyper-durable",
   "version": "0.1.0",
   "description": "Object-like access to Durable Object properties and methods",
-  "repository": "git@github.com:ticket-bridge/hyper-durable.git",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/ticket-bridge/hyper-durable.git"
+  },
   "author": "Travis Frank <travis@ticketbridge.io>",
   "license": "MIT",
   "type": "module",
@@ -33,5 +36,15 @@
   },
   "dependencies": {
     "itty-router": "^2.6.1"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/ticket-bridge/hyper-durable/issues"
+  },
+  "homepage": "https://github.com/ticket-bridge/hyper-durable#readme",
+  "keywords": [
+    "cloudflare",
+    "durable",
+    "durable-objects",
+    "objects"
+  ]
 }
