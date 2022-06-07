@@ -83,11 +83,11 @@ export default {
 
 Use as the base class of your durable object.  Includes some properties and methods by default, which are described below.
 
-#### `env`
+#### `env: Env`
 
 The `env` passed in the constructor.
 
-#### `state`
+#### `state: HyperState`
 
 The `state` passed in the constructor, plus:
 
@@ -103,11 +103,11 @@ Set of properties that are persisted in Durable Object storage.
 
 Used to track the key of a deeply-nested property (i.e., when accessing `this.favoriteFoods[0]`, `state.tempKey` is `favoriteFoods`).
 
-#### `storage`
+#### `storage: DurableObjectStorage`
 
 Durable Object storage, from `state.storage`.
 
-#### `router`
+#### `router: Router`
 
 An [itty-router](https://www.npmjs.com/package/itty-router) to handle incoming fetch requests.
 
@@ -129,9 +129,9 @@ Deletes all data in `storage`, clears `state.dirty` and `state.persisted`, and d
 
 #### `async fetch(request: Request): Promise<Response>`
 
-Initializes the object (if not previously initialized), then passes the request to `router`.  After `router` handles the request, if `state.dirty` has members, persists data.
+Initializes the object (if not previously initialized), then passes the request to `router`.  After `router` handles the request, persists and dirty data.
 
-### proxyHyperDurables
+### `proxyHyperDurables(env: Env, doBindings: { [key: string]: doClass })`
 
 Use to proxy your durable object namespaces.  Accepts two parameters: `env` and `doBindings`.  `env` is the `env` of your worker where namespaces are accessed.  `doBindings` is an object, where the keys are *binding names* and the values are the *durable object classes* associated with those binding.  Returns an object, where the keys are the passed *binding names* and the values are the associated *HyperNamespaceProxy*.
 
@@ -173,3 +173,7 @@ Stub properties and methods will return their value directly in the event of a s
   ]
 }
 ```
+
+## Special Thanks
+
+This library was heavily inspired by [itty-durable](https://github.com/kwhitley/itty-durable) from [Kevin Whitley](https://github.com/kwhitley).
