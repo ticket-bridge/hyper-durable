@@ -8,8 +8,9 @@
   "type": "module",
   "module": "./dist/index.mjs",
   "scripts": {
-    "build": "node build.js",
-    "test": "yarn run build && node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "build": "export ENV=prod && node build.js",
+    "build-test": "export ENV=test && node build.js",
+    "test": "yarn run build-test && node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "devDependencies": {
     "@babel/core": "^7.17.10",
