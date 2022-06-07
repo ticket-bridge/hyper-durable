@@ -41,6 +41,9 @@
   "bugs": {
     "url": "https://github.com/ticket-bridge/hyper-durable/issues"
   },
+  "files": [
+    "dist/*"
+  ],
   "homepage": "https://github.com/ticket-bridge/hyper-durable#readme",
   "keywords": [
     "cloudflare",
