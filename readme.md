@@ -146,7 +146,7 @@ Deletes all data in `storage`, clears `state.dirty` and `state.persisted`, and d
 
 #### `async fetch(request: Request): Promise<Response>`
 
-Initializes the object (if not previously initialized), then passes the request to `router`.  After `router` handles the request, persists and dirty data.
+Initializes the object (if not previously initialized), then passes the request to `router`.  After `router` handles the request, persists any dirty data.
 
 ### `proxyHyperDurables(env: Env, doBindings: { [key: string]: DOClass })`
 
