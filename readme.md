@@ -29,7 +29,7 @@ Inside your durable object, access properties and methods in memory using `this`
 
 ```javascript
 // RubberDuck.js
-import { HyperDurable } from 'hyper-durable';
+import { HyperDurable } from '@ticketbridge/hyper-durable';
 
 export class RubberDuck extends HyperDurable {
   constructor(state, env) {
@@ -58,7 +58,7 @@ Every stub operation must be `await`ed, since they all use the `fetch` API under
 
 ```javascript
 // worker.js
-import { proxyHyperDurables } from 'hyper-durable';
+import { proxyHyperDurables } from '@ticketbridge/hyper-durable';
 import { RubberDuck } from './RubberDuck';
 
 // Export the DO class
