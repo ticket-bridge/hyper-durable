@@ -7,7 +7,8 @@ const __dirname = path.dirname(__filename);
 
 const commonOptions = {
   bundle: true,
-  sourcemap: true,
+  sourcemap: process.env.ENV === "prod" ? false : true,
+  minify: true,
   target: "esnext",
   entryPoints: [path.join(__dirname, process.env.ENV === "prod" ? "src" : "test", "index.ts")],
   outdir: path.join(__dirname, "dist"),
