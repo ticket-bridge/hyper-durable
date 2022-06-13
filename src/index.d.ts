@@ -44,7 +44,7 @@ export class HyperNamespaceProxy<T extends HyperDurable<ENV>, ENV> {
         ? () => Promise<unknown>
         : Promise<unknown>;
     } & {
-      [Prop in keyof T as T[Prop] extends Function ? never : `set${Capitalize<string & Prop>}`]?:
+      [Prop in keyof T as T[Prop] extends Function ? never : `set${Capitalize<string & Prop>}`]:
         (newValue: T[Prop]) => Promise<unknown>
     };
 }
