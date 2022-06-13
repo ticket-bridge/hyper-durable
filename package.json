@@ -9,8 +9,11 @@
   "author": "Travis Frank <travis@ticketbridge.io>",
   "license": "MIT",
   "type": "module",
+  "main": "./dist/index.js",
   "module": "./dist/index.mjs",
+  "typings": "./dist/index.d.ts",
   "scripts": {
+    "prebuild": "rm -rf dist && mkdir dist && cp src/index.d.ts dist/index.d.ts",
     "build": "export ENV=prod && node build.js",
     "build-test": "export ENV=test && node build.js",
     "test": "yarn build-test && node --experimental-vm-modules node_modules/jest/bin/jest.js",
