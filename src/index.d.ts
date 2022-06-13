@@ -18,6 +18,13 @@ export class HyperDurable<Env = unknown> {
   router: Router;
 
   constructor(state: DurableObjectState, env: Env);
+
+  initialize(): Promise<void>;
+  load(): Promise<void>;
+  persist(): Promise<void>;
+  destroy(): Promise<void>
+  toObject(): object;
+  fetch(request: Request): Promise<Response>;
 }
 
 export class HyperNamespaceProxy<T extends HyperDurable<ENV>, ENV> {
