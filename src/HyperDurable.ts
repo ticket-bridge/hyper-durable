@@ -248,6 +248,14 @@ export class HyperDurable<Env = unknown> implements DurableObject {
     }
   }
 
+  toObject(): object {
+    const output = {};
+    for (let key of this.state.persisted) {
+      output[key] = this[key];
+    }
+    return output;
+  }
+
   async fetch(request: Request): Promise<Response> {
     await this.initialize();
     return this.router

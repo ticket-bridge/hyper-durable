@@ -144,6 +144,10 @@ Persists dirty properties.
 
 Deletes all data in `storage`, clears `state.dirty` and `state.persisted`, and deletes all properties from memory.
 
+#### `toObject()`
+
+Returns all persisted data as an object.
+
 #### `async fetch(request: Request): Promise<Response>`
 
 Initializes the object (if not previously initialized), then passes the request to `router`.  After `router` handles the request, persists any dirty data.

@@ -150,6 +150,16 @@ describe('HyperDurable', () => {
         expect(e.message).to.equal('Something went wrong while destroying object');
       }
     });
+
+    test('returns all custom data from toObject', async () => {
+      counter.counter = 2;
+      await counter.persist();
+      const obj = counter.toObject();
+      expect(obj).to.deep.equal({
+        counter: 2,
+        objectLikeProp: []
+      });
+    });
   });
 
   describe('fetch', () => {
