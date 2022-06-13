@@ -39,7 +39,7 @@ export class HyperNamespaceProxy<T extends HyperDurable<ENV>, ENV> {
     ref: new (state: DurableObjectState, env: ENV) => T
   );
   get(id: DurableObjectId): DurableObjectStub & {
-      [Prop in keyof T]?:
+      [Prop in keyof T]:
         T[Prop] extends Function
         ? () => Promise<unknown>
         : Promise<unknown>;
