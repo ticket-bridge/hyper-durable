@@ -46,5 +46,5 @@ export function proxyHyperDurables<DO extends HyperDurable<ENV>, ENV>(
   env: ENV,
   doBindings: { [key: string]: new (state: DurableObjectState, env: ENV) => DO }
 ): {
-  [Prop in keyof typeof doBindings]?: HyperNamespaceProxy<DO, ENV>
+  [Prop in keyof typeof doBindings]: HyperNamespaceProxy<DO, ENV>
 }
