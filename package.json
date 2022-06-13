@@ -1,6 +1,6 @@
 {
   "name": "@ticketbridge/hyper-durable",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Object-like access to Durable Object properties and methods",
   "repository": {
     "type": "git",
@@ -10,8 +10,12 @@
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "typings": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs"
+    }
+  },
   "scripts": {
     "prebuild": "rm -rf dist && mkdir dist && cp src/index.d.ts dist/index.d.ts",
     "build": "export ENV=prod && node build.js",
