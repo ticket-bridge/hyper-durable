@@ -11,6 +11,7 @@ export default {
   collectCoverage: true,
   collectCoverageFrom: [
     "src/**/*.ts",
+    "!**/*.d.ts"
   ],
 
   // Miniflare!
