@@ -146,7 +146,7 @@ Deletes all data in `storage`, clears `state.dirty` and `state.persisted`, and d
 
 #### `toObject()`
 
-Returns all persisted data as an object.
+Returns all persisted and dirty data as an object.
 
 #### `async fetch(request: Request): Promise<Response>`
 

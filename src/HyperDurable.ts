@@ -253,6 +253,9 @@ export class HyperDurable<Env = unknown> implements DurableObject {
     for (let key of this.state.persisted) {
       output[key] = this[key];
     }
+    for (let key of this.state.dirty) {
+      output[key] = this[key];
+    }
     return output;
   }
 

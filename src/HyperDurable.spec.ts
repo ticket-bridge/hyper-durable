@@ -160,6 +160,13 @@ describe('HyperDurable', () => {
         objectLikeProp: []
       });
     });
+
+    test('returns unpersisted dirty data from toObject', async () => {
+      expect(counter.toObject()).to.deep.equal({
+        counter: 1,
+        objectLikeProp: []
+      });
+    });
   });
 
   describe('fetch', () => {
