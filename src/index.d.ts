@@ -40,12 +40,12 @@ export class HyperNamespaceProxy<DO extends HyperDurable<any, Env>, Env> {
   );
   get(id: DurableObjectId): DurableObjectStub & {
       [Prop in keyof DO]:
-        DO[Prop] extends Function
-        ? () => Promise<unknown>
-        : Promise<unknown>;
+        DO[Prop] extends (...args: any) => any
+        ? (...args: Parameters<DO[Prop]>) => Promise<ReturnType<DO[Prop]>>
+        : Promise<DO[Prop]>;
     } & {
       [Prop in keyof DO as DO[Prop] extends Function ? never : `set${Capitalize<string & Prop>}`]:
-        (newValue: DO[Prop]) => Promise<unknown>
+        (newValue: DO[Prop]) => Promise<DO[Prop]>
     };
 }
 

@@ -42,14 +42,14 @@ export class HyperNamespaceProxy<DO extends HyperDurable<any, ENV>, ENV> impleme
     // fetch interface.
     type PromisedGetStub = {
       [Prop in keyof DO]?:
-        DO[Prop] extends Function
-        ? () => Promise<unknown>
-        : Promise<unknown>;
+        DO[Prop] extends (...args: any) => any
+        ? (...args: Parameters<DO[Prop]>) => Promise<ReturnType<DO[Prop]>>
+        : Promise<DO[Prop]>;
     };
     // All of our props have setters formatted as: setProperty()
     type SetStub = {
       [Prop in keyof DO as DO[Prop] extends Function ? never : `set${Capitalize<string & Prop>}`]?:
-        (newValue: DO[Prop]) => Promise<unknown>
+        (newValue: DO[Prop]) => Promise<DO[Prop]>
     }
     type HyperStub = DurableObjectStub & PromisedGetStub & SetStub;
 
