@@ -254,10 +254,7 @@ export class HyperDurable<T extends object, Env = unknown> implements DurableObj
 
   toObject(): T {
     const output = {};
-    for (let key of this.state.persisted) {
-      output[key as string] = this[key as string];
-    }
-    for (let key of this.state.dirty) {
+    for (let key of new Set([...this.state.persisted, ...this.state.dirty])) {
       output[key as string] = this[key as string];
     }
     // @ts-ignore
