@@ -1,9 +1,9 @@
 import { HyperDurable } from './HyperDurable';
 import { HyperError } from './HyperError';
 
-export class HyperNamespaceProxy<T extends HyperDurable<ENV>, ENV> implements DurableObjectNamespace {
+export class HyperNamespaceProxy<DO extends HyperDurable<any, ENV>, ENV> implements DurableObjectNamespace {
   namespace: DurableObjectNamespace;
-  ref: T;
+  ref: DO;
 
   newUniqueId: (_options?: DurableObjectNamespaceNewUniqueIdOptions) => DurableObjectId;
   idFromName: (name: string) => DurableObjectId;
@@ -11,7 +11,7 @@ export class HyperNamespaceProxy<T extends HyperDurable<ENV>, ENV> implements Du
 
   constructor(
     namespace: DurableObjectNamespace,
-    ref: new (state: DurableObjectState, env: ENV) => T
+    ref: new (state: DurableObjectState, env: ENV) => DO
   ) {
     this.namespace = namespace;
     // Create a reference of the DO to check for methods / properties
@@ -41,15 +41,15 @@ export class HyperNamespaceProxy<T extends HyperDurable<ENV>, ENV> implements Du
     // All of our prop getters & methods return Promises, since everything uses the
     // fetch interface.
     type PromisedGetStub = {
-      [Prop in keyof T]?:
-        T[Prop] extends Function
+      [Prop in keyof DO]?:
+        DO[Prop] extends Function
         ? () => Promise<unknown>
         : Promise<unknown>;
     };
     // All of our props have setters formatted as: setProperty()
     type SetStub = {
-      [Prop in keyof T as T[Prop] extends Function ? never : `set${Capitalize<string & Prop>}`]?:
-        (newValue: T[Prop]) => Promise<unknown>
+      [Prop in keyof DO as DO[Prop] extends Function ? never : `set${Capitalize<string & Prop>}`]?:
+        (newValue: DO[Prop]) => Promise<unknown>
     }
     type HyperStub = DurableObjectStub & PromisedGetStub & SetStub;
 
@@ -115,12 +115,12 @@ export class HyperNamespaceProxy<T extends HyperDurable<ENV>, ENV> implements Du
   }
 }
 
-export const proxyHyperDurables = <DO extends HyperDurable<ENV>, ENV>(
-  env: ENV,
-  doBindings: { [key: string]: new (state: DurableObjectState, env: ENV) => DO }
+export const proxyHyperDurables = <DO extends HyperDurable<any, Env>, Env>(
+  env: Env,
+  doBindings: { [key: string]: new (state: DurableObjectState, env: Env) => DO }
 ) => {
   const newEnv: {
-    [Prop in keyof typeof doBindings]?: HyperNamespaceProxy<DO, ENV>
+    [Prop in keyof typeof doBindings]?: HyperNamespaceProxy<DO, Env>
   } = {};
   for (const [key, value] of Object.entries(doBindings)) {
     if (!(value.prototype instanceof HyperDurable)) {

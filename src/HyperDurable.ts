@@ -1,18 +1,18 @@
 import { Router } from 'itty-router';
 import { HyperError } from './HyperError';
 
-interface HyperState extends DurableObjectState {
-  dirty: Set<string>;
+interface HyperState<T> extends DurableObjectState {
+  dirty: Set<Extract<keyof T, string>>;
   initialized?: Promise<void>;
-  persisted: Set<string>;
+  persisted: Set<Extract<keyof T, string>>;
   tempKey: string;
 }
 
-export class HyperDurable<Env = unknown> implements DurableObject {
+export class HyperDurable<T extends object, Env = unknown> implements DurableObject {
   readonly isProxy?: boolean;
   readonly original?: any;
   env: Env;
-  state: HyperState;
+  state: HyperState<T>;
   storage: DurableObjectStorage;
   router: Router;
 
@@ -51,7 +51,9 @@ export class HyperDurable<Env = unknown> implements DurableObject {
 
         // If we're getting a proxied top-level property of the Durable Object,
         // save the key to persist the deeply-nested property
-        if (target[key].isProxy && this === target) this.state.tempKey = key;
+        if (target[key].isProxy && this === target && !reservedKeys.has(key)) {
+          this.state.tempKey = key;
+        }
 
         // If prop is a function, bind `this`
         return typeof target[key] === 'function'
@@ -62,9 +64,9 @@ export class HyperDurable<Env = unknown> implements DurableObject {
         // Add key to persist data
         if (target[key] !== value) {
           if (this === target) {
-            this.state.dirty.add(key);
+            this.state.dirty.add(key as Extract<keyof T, string>);
           } else {
-            this.state.dirty.add(this.state.tempKey);
+            this.state.dirty.add(this.state.tempKey as Extract<keyof T, string>);
           }
         }
 
@@ -202,13 +204,13 @@ export class HyperDurable<Env = unknown> implements DurableObject {
 
   async load() {
     if (this.state.persisted.size === 0) {
-      const persisted = await this.storage.get<Set<string>>('persisted');
+      const persisted = await this.storage.get<Set<Extract<keyof T, string>>>('persisted');
       if (persisted) {
         this.state.persisted = persisted;
       }
     }
     for (let key of this.state.persisted) {
-      this[key] = await this.storage.get(key);
+      this[key as string] = await this.storage.get(key);
     }
   }
 
@@ -217,7 +219,9 @@ export class HyperDurable<Env = unknown> implements DurableObject {
     try {
       let newProps = false;
       for (let key of this.state.dirty) {
-        const value = this[key].isProxy ? this[key].original : this[key];
+        const value = this[key as string].isProxy ?
+          this[key as string].original :
+          this[key as string];
         await this.storage.put(key, value);
         if (!this.state.persisted.has(key)) {
           this.state.persisted.add(key);
@@ -238,7 +242,7 @@ export class HyperDurable<Env = unknown> implements DurableObject {
       await this.storage.deleteAll();
       this.state.dirty.clear();
       for (let key of this.state.persisted) {
-        delete this[key];
+        delete this[key as string];
         this.state.persisted.delete(key);
       }
     } catch(e) {
@@ -248,14 +252,15 @@ export class HyperDurable<Env = unknown> implements DurableObject {
     }
   }
 
-  toObject(): object {
+  toObject(): T {
     const output = {};
     for (let key of this.state.persisted) {
-      output[key] = this[key];
+      output[key as string] = this[key as string];
     }
     for (let key of this.state.dirty) {
-      output[key] = this[key];
+      output[key as string] = this[key as string];
     }
+    // @ts-ignore
     return output;
   }
 

@@ -2,18 +2,18 @@
 
 import { Router } from "itty-router";
 
-export interface HyperState extends DurableObjectState {
-  dirty: Set<string>;
+export interface HyperState<T> extends DurableObjectState {
+  dirty: Set<Extract<keyof T, string>>;
   initialized?: Promise<void>;
-  persisted: Set<string>;
+  persisted: Set<Extract<keyof T, string>>;
   tempKey: string;
 }
 
-export class HyperDurable<Env = unknown> {
+export class HyperDurable<T extends object, Env = unknown> {
   readonly isProxy?: boolean;
   readonly original?: any;
   env: Env;
-  state: HyperState;
+  state: HyperState<T>;
   storage: DurableObjectStorage;
   router: Router;
 
@@ -23,35 +23,35 @@ export class HyperDurable<Env = unknown> {
   load(): Promise<void>;
   persist(): Promise<void>;
   destroy(): Promise<void>
-  toObject(): object;
+  toObject(): T;
   fetch(request: Request): Promise<Response>;
 }
 
-export class HyperNamespaceProxy<T extends HyperDurable<ENV>, ENV> {
+export class HyperNamespaceProxy<DO extends HyperDurable<any, Env>, Env> {
   namespace: DurableObjectNamespace;
-  ref: T;
+  ref: DO;
   newUniqueId: (_options?: DurableObjectNamespaceNewUniqueIdOptions) => DurableObjectId;
   idFromName: (name: string) => DurableObjectId;
   idFromString: (hexId: string) => DurableObjectId;
 
   constructor(
     namespace: DurableObjectNamespace,
-    ref: new (state: DurableObjectState, env: ENV) => T
+    ref: new (state: DurableObjectState, env: Env) => DO
   );
   get(id: DurableObjectId): DurableObjectStub & {
-      [Prop in keyof T]:
-        T[Prop] extends Function
+      [Prop in keyof DO]:
+        DO[Prop] extends Function
         ? () => Promise<unknown>
         : Promise<unknown>;
     } & {
-      [Prop in keyof T as T[Prop] extends Function ? never : `set${Capitalize<string & Prop>}`]:
-        (newValue: T[Prop]) => Promise<unknown>
+      [Prop in keyof DO as DO[Prop] extends Function ? never : `set${Capitalize<string & Prop>}`]:
+        (newValue: DO[Prop]) => Promise<unknown>
     };
 }
 
-export function proxyHyperDurables<DO extends HyperDurable<ENV>, ENV>(
-  env: ENV,
-  doBindings: { [key: string]: new (state: DurableObjectState, env: ENV) => DO }
+export function proxyHyperDurables<DO extends HyperDurable<any, Env>, Env>(
+  env: Env,
+  doBindings: { [key: string]: new (state: DurableObjectState, env: Env) => DO }
 ): {
-  [Prop in keyof typeof doBindings]: HyperNamespaceProxy<DO, ENV>
+  [Prop in keyof typeof doBindings]: HyperNamespaceProxy<DO, Env>
 }

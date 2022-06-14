@@ -1,12 +1,19 @@
 import { HyperDurable } from '../src/HyperDurable';
 
-export class Counter extends HyperDurable<Environment> {
+type CounterData = {
+  abc?: number;
+  counter: number;
+  objectLikeProp: string[];
+}
+
+export class Counter extends HyperDurable<CounterData, Environment> implements CounterData {
   abc?: number;
   counter: number;
   objectLikeProp: string[];
 
   constructor(state: DurableObjectState, env: Environment) {
     super(state, env);
+    
     this.counter = 1;
     this.objectLikeProp = [];
   }
