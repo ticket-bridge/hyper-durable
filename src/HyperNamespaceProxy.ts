@@ -1,7 +1,7 @@
 import { HyperDurable } from './HyperDurable';
 import { HyperError } from './HyperError';
 
-export class HyperNamespaceProxy<DO extends HyperDurable<any, ENV>, ENV> implements DurableObjectNamespace {
+export class HyperNamespaceProxy<DO extends HyperDurable<any, Env>, Env> implements DurableObjectNamespace {
   namespace: DurableObjectNamespace;
   ref: DO;
 
@@ -11,7 +11,7 @@ export class HyperNamespaceProxy<DO extends HyperDurable<any, ENV>, ENV> impleme
 
   constructor(
     namespace: DurableObjectNamespace,
-    ref: new (state: DurableObjectState, env: ENV) => DO
+    ref: new (state: DurableObjectState, env: Env) => DO
   ) {
     this.namespace = namespace;
     // Create a reference of the DO to check for methods / properties
@@ -40,21 +40,22 @@ export class HyperNamespaceProxy<DO extends HyperDurable<any, ENV>, ENV> impleme
   get(id: DurableObjectId) {
     // All of our prop getters & methods return Promises, since everything uses the
     // fetch interface.
-    type PromisedGetStub = {
+    type PromisedGetStub<DO extends HyperDurable<any, Env>, Env> = {
       [Prop in keyof DO]?:
         DO[Prop] extends (...args: any) => any
         ? (...args: Parameters<DO[Prop]>) => Promise<ReturnType<DO[Prop]>>
         : Promise<DO[Prop]>;
     };
     // All of our props have setters formatted as: setProperty()
-    type SetStub = {
+    type SetStub<DO extends HyperDurable<any, Env>, Env> = {
       [Prop in keyof DO as DO[Prop] extends Function ? never : `set${Capitalize<string & Prop>}`]?:
         (newValue: DO[Prop]) => Promise<DO[Prop]>
     }
-    type HyperStub = DurableObjectStub & PromisedGetStub & SetStub;
+    type HyperStub<DO extends HyperDurable<any, Env>, Env> =
+      DurableObjectStub & PromisedGetStub<DO, Env> & SetStub<DO, Env>;
 
     const stub = this.namespace.get(id);
-    const hyperStub: HyperStub = Object.assign<DurableObjectStub, object>(stub, {});
+    const hyperStub: HyperStub<DO, Env> = Object.assign<DurableObjectStub, object>(stub, {});
 
     function createHyperRequest(action: string, key: string, payload?: object) {
       return new Request(`https://hd.io/${action}/${key}`, {
@@ -111,7 +112,7 @@ export class HyperNamespaceProxy<DO extends HyperDurable<any, ENV>, ENV> impleme
       }
     }
 
-    return new Proxy<HyperStub>(hyperStub, handler);
+    return new Proxy<HyperStub<DO, Env>>(hyperStub, handler);
   }
 }
 

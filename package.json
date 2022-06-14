@@ -1,6 +1,6 @@
 {
   "name": "@ticketbridge/hyper-durable",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "Object-like access to Durable Object properties and methods",
   "repository": {
     "type": "git",
@@ -20,7 +20,7 @@
     "prebuild": "rm -rf dist && mkdir dist && cp src/index.d.ts dist/index.d.ts",
     "build": "export ENV=prod && node build.js",
     "build-test": "export ENV=test && node build.js",
-    "test": "yarn build-test && node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "test": "yarn build-test && NODE_OPTIONS=--experimental-vm-modules npx jest"
   },
   "devDependencies": {
     "@babel/core": "^7.17.10",

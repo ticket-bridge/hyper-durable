@@ -27,6 +27,21 @@ export class HyperDurable<T extends object, Env = unknown> {
   fetch(request: Request): Promise<Response>;
 }
 
+export type PromisedGetStub<DO extends HyperDurable<any, Env>, Env> = {
+  [Prop in keyof DO]?:
+    DO[Prop] extends (...args: any) => any
+    ? (...args: Parameters<DO[Prop]>) => Promise<ReturnType<DO[Prop]>>
+    : Promise<DO[Prop]>;
+}
+
+export type SetStub<DO extends HyperDurable<any, Env>, Env> = {
+  [Prop in keyof DO as DO[Prop] extends Function ? never : `set${Capitalize<string & Prop>}`]?:
+    (newValue: DO[Prop]) => Promise<DO[Prop]>
+}
+
+export type HyperStub<DO extends HyperDurable<any, Env>, Env> = 
+  DurableObjectStub & PromisedGetStub<DO, Env> & SetStub<DO, Env>
+
 export class HyperNamespaceProxy<DO extends HyperDurable<any, Env>, Env> {
   namespace: DurableObjectNamespace;
   ref: DO;
@@ -38,15 +53,7 @@ export class HyperNamespaceProxy<DO extends HyperDurable<any, Env>, Env> {
     namespace: DurableObjectNamespace,
     ref: new (state: DurableObjectState, env: Env) => DO
   );
-  get(id: DurableObjectId): DurableObjectStub & {
-      [Prop in keyof DO]:
-        DO[Prop] extends (...args: any) => any
-        ? (...args: Parameters<DO[Prop]>) => Promise<ReturnType<DO[Prop]>>
-        : Promise<DO[Prop]>;
-    } & {
-      [Prop in keyof DO as DO[Prop] extends Function ? never : `set${Capitalize<string & Prop>}`]:
-        (newValue: DO[Prop]) => Promise<DO[Prop]>
-    };
+  get(id: DurableObjectId): HyperStub<DO, Env>;
 }
 
 export function proxyHyperDurables<DO extends HyperDurable<any, Env>, Env>(

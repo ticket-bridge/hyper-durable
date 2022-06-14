@@ -12,7 +12,7 @@ import { Counter } from '../test/index';
 
 describe('HyperDurable', () => {
   const bindings = getMiniflareBindings();
-  let counter: Counter | undefined;
+  let counter: Counter;
 
   beforeEach(() => {
     const id = new DurableObjectId('testName', 'testHexId');
