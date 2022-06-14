@@ -121,7 +121,7 @@ export const proxyHyperDurables = <DO extends HyperDurable<any, Env>, Env>(
   doBindings: { [key: string]: new (state: DurableObjectState, env: Env) => DO }
 ) => {
   const newEnv: {
-    [Prop in keyof typeof doBindings]?: HyperNamespaceProxy<DO, Env>
+    [Prop in keyof typeof doBindings]: HyperNamespaceProxy<DO, Env>
   } = {};
   for (const [key, value] of Object.entries(doBindings)) {
     if (!(value.prototype instanceof HyperDurable)) {

@@ -28,7 +28,7 @@ export class HyperDurable<T extends object, Env = unknown> {
 }
 
 export type PromisedGetStub<DO extends HyperDurable<any, Env>, Env> = {
-  [Prop in keyof DO]?:
+  [Prop in keyof DO]:
     DO[Prop] extends (...args: any) => any
     ? (...args: Parameters<DO[Prop]>) => Promise<ReturnType<DO[Prop]>>
     : Promise<DO[Prop]>;
