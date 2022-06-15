@@ -3,7 +3,7 @@ import { HyperError } from './HyperError';
 
 export class HyperNamespaceProxy<DO extends HyperDurable<any, Env>, Env> implements DurableObjectNamespace {
   namespace: DurableObjectNamespace;
-  ref: DO;
+  ref: new (state: DurableObjectState, env: Env) => DO;
 
   newUniqueId: (_options?: DurableObjectNamespaceNewUniqueIdOptions) => DurableObjectId;
   idFromName: (name: string) => DurableObjectId;
@@ -14,9 +14,8 @@ export class HyperNamespaceProxy<DO extends HyperDurable<any, Env>, Env> impleme
     ref: new (state: DurableObjectState, env: Env) => DO
   ) {
     this.namespace = namespace;
-    // Create a reference of the DO to check for methods / properties
-    // @ts-ignore
-    this.ref = new ref({}, {});
+    // Reference of the DO to check for methods / properties
+    this.ref = ref;
 
     this.newUniqueId = namespace.newUniqueId;
     this.idFromName = namespace.idFromName;
@@ -88,7 +87,7 @@ export class HyperNamespaceProxy<DO extends HyperDurable<any, Env>, Env> impleme
         // Short circuit for fetch to maintain manual access
         if (key === 'fetch') return hyperStub.fetch.bind(hyperStub);
 
-        if (typeof this.ref[key] === 'function') {
+        if (typeof this.ref.prototype[key] === 'function') {
           // Anonymous function to pass args
           return function (...args: any[]) {
             const request = createHyperRequest('call', key, { args });

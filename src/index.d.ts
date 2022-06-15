@@ -35,7 +35,7 @@ export type PromisedGetStub<DO extends HyperDurable<any, Env>, Env> = {
 }
 
 export type SetStub<DO extends HyperDurable<any, Env>, Env> = {
-  [Prop in keyof DO as DO[Prop] extends Function ? never : `set${Capitalize<string & Prop>}`]?:
+  [Prop in keyof DO as DO[Prop] extends Function ? never : `set${Capitalize<string & Prop>}`]:
     (newValue: DO[Prop]) => Promise<DO[Prop]>
 }
 
