@@ -56,9 +56,10 @@ export class HyperNamespaceProxy<DO extends HyperDurable<any, Env>, Env> {
   get(id: DurableObjectId): HyperStub<DO, Env>;
 }
 
-export function proxyHyperDurables<DO extends HyperDurable<any, Env>, Env>(
+// TODO: Don't rely on undocumented behavior
+export function proxyHyperDurables<Bindings extends Record<K, typeof DO>, Env, K extends string, DO extends HyperDurable<any, Env>>(
   env: Env,
-  doBindings: { [key: string]: new (state: DurableObjectState, env: Env) => DO }
+  doBindings: Bindings
 ): {
-  [Prop in keyof typeof doBindings]: HyperNamespaceProxy<DO, Env>
+  [Prop in keyof Bindings]: HyperNamespaceProxy<Bindings[Prop], Env>
 }
