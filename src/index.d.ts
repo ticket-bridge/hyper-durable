@@ -57,9 +57,9 @@ export class HyperNamespaceProxy<DO extends HyperDurable<any, Env>, Env> {
 }
 
 // TODO: Don't rely on undocumented behavior
-export function proxyHyperDurables<Bindings extends Record<K, typeof DO>, Env, K extends string, DO extends HyperDurable<any, Env>>(
+export function proxyHyperDurables<Bindings extends Record<K, DO>, Env, K extends string, DO extends InstanceType<HyperDurable<any, Env>>>(
   env: Env,
   doBindings: Bindings
 ): {
-  [Prop in keyof Bindings]: HyperNamespaceProxy<Bindings[Prop], Env>
+  [Prop in keyof Bindings]: HyperNamespaceProxy<typeof Bindings[Prop], Env>
 }
