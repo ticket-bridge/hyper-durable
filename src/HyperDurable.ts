@@ -203,11 +203,9 @@ export class HyperDurable<T extends object, Env = unknown> implements DurableObj
   }
 
   async load() {
-    if (this.state.persisted.size === 0) {
-      const persisted = await this.storage.get<Set<Extract<keyof T, string>>>('persisted');
-      if (persisted) {
-        this.state.persisted = persisted;
-      }
+    const persisted = await this.storage.get<Set<Extract<keyof T, string>>>('persisted');
+    if (persisted) {
+      this.state.persisted = persisted;
     }
     for (let key of this.state.persisted) {
       this[key as string] = await this.storage.get(key);
@@ -270,6 +268,7 @@ export class HyperDurable<T extends object, Env = unknown> implements DurableObj
         return response;
       })
       .catch(e => {
+        console.log(e);
         return new Response(JSON.stringify({
           errors: [
             {

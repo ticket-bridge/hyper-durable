@@ -55,6 +55,13 @@ describe('HyperNamespaceProxy', () => {
       expect(await counter.increment()).to.equal(null);
       expect(await counter.counter).to.equal(2);
     });
+
+    test('proxies fetch for toObject', async () => {
+      expect(await counter.toObject()).to.deep.equal({
+        counter: 1,
+        objectLikeProp: []
+      })
+    });
   });
 });
 
