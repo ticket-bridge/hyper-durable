@@ -8,11 +8,11 @@ import { Counter } from '../test/index';
 describe('HyperNamespaceProxy', () => {
   const bindings = getMiniflareBindings();
   const COUNTER = new HyperNamespaceProxy(bindings.COUNTER, Counter);
-  const id = COUNTER.newUniqueId();
+  let id = COUNTER.newUniqueId();
   let counter = COUNTER.get(id);
 
   beforeEach(async () => {
-    const id = COUNTER.newUniqueId();
+    id = COUNTER.newUniqueId();
     counter = COUNTER.get(id);
   });
 

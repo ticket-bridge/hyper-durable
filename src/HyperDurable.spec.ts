@@ -151,20 +151,22 @@ describe('HyperDurable', () => {
       }
     });
 
-    test('returns all custom data from toObject', async () => {
-      counter.counter = 2;
-      await counter.persist();
-      const obj = counter.toObject();
-      expect(obj).to.deep.equal({
-        counter: 2,
-        objectLikeProp: []
+    describe('toObject', () => {
+      test('returns previously persisted data', async () => {
+        counter.counter = 2;
+        await counter.persist();
+        const obj = counter.toObject();
+        expect(obj).to.deep.equal({
+          counter: 2,
+          objectLikeProp: []
+        });
       });
-    });
 
-    test('returns unpersisted dirty data from toObject', async () => {
-      expect(counter.toObject()).to.deep.equal({
-        counter: 1,
-        objectLikeProp: []
+      test('returns unpersisted dirty data', async () => {
+        expect(counter.toObject()).to.deep.equal({
+          counter: 1,
+          objectLikeProp: []
+        });
       });
     });
   });
