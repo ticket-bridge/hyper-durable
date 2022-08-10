@@ -36,7 +36,7 @@ export class HyperDurable<T extends object, Env = unknown> implements DurableObj
         // Reserved key to get the underlying object
         if (key === 'original') return target;
 
-        const prop = target[key];
+        let prop = target[key];
 
         // Short-circuit if can't access 
         if (!prop) return Reflect.get(target, key, receiver);
@@ -46,19 +46,16 @@ export class HyperDurable<T extends object, Env = unknown> implements DurableObj
         // Recursively proxy any object-like properties, except reserved keys
         // This enables us to keep track of deeply-nested changes to props
         if (typeof prop === 'object' && !prop.isProxy && !reservedKeys.has(key)) {
-          target[key] = new Proxy(prop, handler);
-        }
-
-        // If we're getting a proxied top-level property of the Durable Object,
-        // save the key to persist the deeply-nested property
-        if (target[key].isProxy && this === target && !reservedKeys.has(key)) {
-          this.state.tempKey = key;
+          prop = new Proxy(prop, handler);
+          // If we're getting a proxied top-level property of the Durable Object,
+          // save the key to persist the deeply-nested property
+          if (this === target) {
+            this.state.tempKey = key;
+          }
         }
 
         // If prop is a function, bind `this`
-        return typeof target[key] === 'function'
-          ? target[key].bind(receiver)
-          : Reflect.get(target, key, receiver);
+        return typeof prop === 'function' ? prop.bind(receiver) : prop;
       },
       set: (target: any, key: string, value: any) => {        
         // Add key to persist data
