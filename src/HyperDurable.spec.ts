@@ -31,7 +31,7 @@ describe('HyperDurable', () => {
     });
 
     test('maintains a Set of all dirty properties', () => {
-      expect(counter.state.dirty).to.be.a('Set').that.has.all.keys('counter', 'objectLikeProp');
+      expect(counter.state.dirty).to.be.a('Set').that.has.all.keys('counter', 'objectLikeProp', 'deeplyNestedObject');
     })
 
     test('reflects other getters', () => {
@@ -61,8 +61,9 @@ describe('HyperDurable', () => {
     test('tracks object-like dirty props', () => {
       counter.state.dirty.clear();
       counter.objectLikeProp.push('test');
+      counter.deeplyNestedObject.nestedObj.nestedProp = 'test';
       expect(counter.objectLikeProp).to.deep.equal(['test']);
-      expect(counter.state.dirty).to.have.all.keys('objectLikeProp');
+      expect(counter.state.dirty).to.have.all.keys(['objectLikeProp', 'deeplyNestedObject']);
     });
   });
 
@@ -106,11 +107,13 @@ describe('HyperDurable', () => {
     test('persists dirty data', async () => {
       counter.counter = 2;
       counter.objectLikeProp.push('three');
+      counter.deeplyNestedObject.nestedObj.nestedProp = 'test';
       await counter.persist();
       expect(counter.state.dirty).to.be.empty;
-      expect(await counter.storage.get('persisted')).to.deep.equal(new Set(['counter', 'objectLikeProp']));
+      expect(await counter.storage.get('persisted')).to.deep.equal(new Set(['counter', 'objectLikeProp', 'deeplyNestedObject']));
       expect(await counter.storage.get('counter')).to.equal(2);
       expect(await counter.storage.get('objectLikeProp')).to.deep.equal(['three']);
+      expect(await counter.storage.get('deeplyNestedObject')).to.deep.equal({ nestedObj: { nestedProp: 'test' } });
     });
 
     test('persist throws when storage throws', async () => {
@@ -158,14 +161,24 @@ describe('HyperDurable', () => {
         const obj = counter.toObject();
         expect(obj).to.deep.equal({
           counter: 2,
-          objectLikeProp: []
+          objectLikeProp: [],
+          deeplyNestedObject: {
+            nestedObj: {
+              nestedProp: 'Level Two',
+            },
+          },
         });
       });
 
       test('returns unpersisted dirty data', async () => {
         expect(counter.toObject()).to.deep.equal({
           counter: 1,
-          objectLikeProp: []
+          objectLikeProp: [],
+          deeplyNestedObject: {
+            nestedObj: {
+              nestedProp: 'Level Two',
+            },
+          },
         });
       });
     });

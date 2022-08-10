@@ -59,7 +59,12 @@ describe('HyperNamespaceProxy', () => {
     test('proxies fetch for toObject', async () => {
       expect(await counter.toObject()).to.deep.equal({
         counter: 1,
-        objectLikeProp: []
+        objectLikeProp: [],
+        deeplyNestedObject: {
+          nestedObj: {
+            nestedProp: 'Level Two',
+          },
+        },
       })
     });
   });
