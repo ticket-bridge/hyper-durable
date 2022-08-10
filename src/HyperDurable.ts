@@ -45,7 +45,7 @@ export class HyperDurable<T extends object, Env = unknown> implements DurableObj
 
         // Recursively proxy any object-like properties, except reserved keys
         // This enables us to keep track of deeply-nested changes to props
-        if (typeof prop === 'object' && !prop.isProxy && !reservedKeys.has(key)) {
+        if (typeof prop === 'object' && !reservedKeys.has(key)) {
           prop = new Proxy(prop, handler);
           // If we're getting a proxied top-level property of the Durable Object,
           // save the key to persist the deeply-nested property
