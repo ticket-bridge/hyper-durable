@@ -57,7 +57,7 @@ export class HyperNamespaceProxy<DO extends HyperDurable<any, Env>, Env> impleme
     const hyperStub: HyperStub<DO, Env> = Object.assign<DurableObjectStub, object>(stub, {});
 
     function createHyperRequest(action: string, key: string, payload?: object) {
-      return new Request(`https://hd.io/${action}/${key}`, {
+      return new Request(`http://hd.io/${action}/${key}`, {
         body: payload ? JSON.stringify(payload) : null,
         method: payload ? 'POST' : 'GET',
         headers: {
