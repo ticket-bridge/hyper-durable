@@ -18,8 +18,8 @@
   },
   "scripts": {
     "prebuild": "rm -rf dist && mkdir dist && cp src/index.d.ts dist/index.d.ts",
-    "build": "export ENV=prod && node build.js",
-    "build-test": "export ENV=test && node build.js",
+    "build": "ENV=prod node build.js",
+    "build-test": "ENV=test node build.js",
     "test": "yarn build-test && NODE_OPTIONS=--experimental-vm-modules npx jest"
   },
   "packageManager": "yarn@3.3.0",
