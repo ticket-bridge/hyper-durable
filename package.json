@@ -43,7 +43,8 @@
     "wrangler": "^2.0.5"
   },
   "dependencies": {
-    "itty-router": "^2.6.1"
+    "itty-router": "^2.6.1",
+    "lodash": "^4.17.21"
   },
   "bugs": {
     "url": "https://github.com/ticket-bridge/hyper-durable/issues"
