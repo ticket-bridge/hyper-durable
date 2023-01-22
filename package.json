@@ -22,6 +22,7 @@
     "build-test": "export ENV=test && node build.js",
     "test": "yarn build-test && NODE_OPTIONS=--experimental-vm-modules npx jest"
   },
+  "packageManager": "yarn@3.3.0",
   "devDependencies": {
     "@babel/core": "^7.17.10",
     "@babel/preset-env": "^7.17.10",
@@ -56,6 +57,5 @@
     "durable",
     "durable-objects",
     "objects"
-  ],
-  "packageManager": "yarn@1.22.19"
+  ]
 }
