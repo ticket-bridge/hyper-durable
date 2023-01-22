@@ -1,4 +1,5 @@
 import { Router } from 'itty-router';
+import isEqual from 'lodash/isEqual';
 import { HyperError } from './HyperError';
 
 interface HyperState<T> extends DurableObjectState {
@@ -7,6 +8,8 @@ interface HyperState<T> extends DurableObjectState {
   persisted: Set<Extract<keyof T, string>>;
   tempKey: string;
 }
+
+const reservedKeys = new Set(['env', 'state', 'storage', 'router', 'isProxy', 'original']);
 
 export class HyperDurable<T extends object, Env = unknown> implements DurableObject {
   readonly isProxy?: boolean;
@@ -41,8 +44,6 @@ export class HyperDurable<T extends object, Env = unknown> implements DurableObj
         // Short-circuit if can't access 
         if (!prop) return Reflect.get(target, key, receiver);
 
-        const reservedKeys = new Set(['env', 'state', 'storage', 'router']);
-
         // Recursively proxy any object-like properties, except reserved keys
         // This enables us to keep track of deeply-nested changes to props
         if (typeof prop === 'object' && !reservedKeys.has(key)) {
@@ -58,8 +59,8 @@ export class HyperDurable<T extends object, Env = unknown> implements DurableObj
         return typeof prop === 'function' ? prop.bind(receiver) : prop;
       },
       set: (target: any, key: string, value: any) => {        
-        // Add key to persist data
-        if (target[key] !== value) {
+        // Add key to persist data if dirty, except reserved keys
+        if (!isEqual(target[key], value) && !reservedKeys.has(key)) {
           if (this === target) {
             this.state.dirty.add(key as Extract<keyof T, string>);
           } else {
