@@ -24,6 +24,5 @@ jobs:
           node-version: '16.x'
       - name: Install dependencies
         run: yarn --immutable
-      - run: yarn --version
       - name: Run tests
         run: yarn run test
