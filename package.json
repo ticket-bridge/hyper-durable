@@ -56,5 +56,6 @@
     "durable",
     "durable-objects",
     "objects"
-  ]
+  ],
+  "packageManager": "yarn@1.22.19"
 }
