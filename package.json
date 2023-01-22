@@ -1,6 +1,6 @@
 {
   "name": "@ticketbridge/hyper-durable",
-  "version": "0.1.19",
+  "version": "0.2.0-rc1",
   "description": "Object-like access to Durable Object properties and methods",
   "repository": {
     "type": "git",
