@@ -65,6 +65,12 @@ describe('HyperDurable', () => {
       expect(counter.objectLikeProp).to.deep.equal(['test']);
       expect(counter.state.dirty).to.have.all.keys(['objectLikeProp', 'deeplyNestedObject']);
     });
+
+    test('deeply compares object-like props', () => {
+      counter.state.dirty.clear();
+      counter.objectLikeProp = [];
+      expect(counter.state.dirty).to.be.empty;
+    });
   });
 
   describe('storage', () => {
